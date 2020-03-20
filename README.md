@@ -1,2 +1,2 @@
 # Backend
-(optional) API siehe Google Doc
+API siehe Google Doc
