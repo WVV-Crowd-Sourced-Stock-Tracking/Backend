@@ -20,7 +20,7 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
              <param-name>jersey.config.server.provider.packages</param-name>
-             <param-value>setup;enterprise;deerRanch;hundezimmer</param-value>
+             <param-value>webService</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
