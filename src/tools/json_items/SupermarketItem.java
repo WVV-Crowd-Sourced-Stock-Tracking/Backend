@@ -17,7 +17,7 @@ public class SupermarketItem {
 	public SupermarketItem(@NotNull Supermarket supermarket) {
 		this.supermarket = supermarket;
 		
-		id = supermarket.getId();
+		market_id = supermarket.getMarket_id();
 		name = supermarket.getName();
 		city = supermarket.getLocation().getCity();
 		street = supermarket.getLocation().getStreet();
@@ -26,7 +26,7 @@ public class SupermarketItem {
 		
 	}
 	
-	private int id;
+	private int market_id;
 	private String name;
 	private String city;
 	private String street;
@@ -34,11 +34,11 @@ public class SupermarketItem {
 	private String gps_width;
 	private List<ProductItem> product = new ArrayList<ProductItem>();
 
-	public int getId() {
-		return id;
+	public int getMarket_id() {
+		return market_id;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setMarket_id(int market_id) {
+		this.market_id = market_id;
 	}
 	public String getName() {
 		return name;
@@ -80,9 +80,9 @@ public class SupermarketItem {
 	 * @param gps_length
 	 * @param gps_width
 	 */
-	public SupermarketItem(int id, String name, String city, String street, String gps_length, String gps_width) {
+	public SupermarketItem(int market_id, String name, String city, String street, String gps_length, String gps_width) {
 		super();
-		this.id = id;
+		this.market_id = market_id;
 		this.name = name;
 		this.city = city;
 		this.street = street;

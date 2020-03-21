@@ -64,7 +64,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -89,8 +89,8 @@ public class Rest extends HttpServlet {
 		      "name": "REWA Center Bad Nauheim",
 		      "city": "Bad Nauheim",
 		      "street": "Georg-Scheller-StraÃŸe 2-8",
-		      "gps_length": "50Â°21'43.0\"N",
-		      "gps_width": "8Â°45'15.2\"E"
+		      "gps_length": "8.754167",
+		      "gps_width": "50.361944"
 		   }]
 		}
 	 */
@@ -103,9 +103,9 @@ public class Rest extends HttpServlet {
 		Connection con = null;
 		MarketScrapeResponse res = new MarketScrapeResponse();
 		try {
-			con = initWS();
+//			con = initWS();
 //TODO /get data from DB
-			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Straße 2-8","50°21'43.0\"N","8°45'15.2\"E"));
+			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Strasse 2-8","8.754167","50.361944"));
 			
 			res.setResult("success");
 		}
@@ -113,8 +113,8 @@ public class Rest extends HttpServlet {
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
-			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+//			finallyWs( con );
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -159,7 +159,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -175,8 +175,8 @@ public class Rest extends HttpServlet {
 			"city":"Bad Nauheim",
 			"zip":"61231",
 			"street":"Georg-Scheller-Strasse 2-8",
-			"gps_length":"8 45'15.2\"E",
-			"gps_width":"50 21'43.0\"N"
+			"gps_length":"8.754167",
+			"gps_width":"50.361944"
 		}	 
 	 *  JSON output
 		{
@@ -202,7 +202,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -252,7 +252,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -291,7 +291,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -329,7 +329,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -369,7 +369,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}
@@ -409,7 +409,7 @@ public class Rest extends HttpServlet {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).build();
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
 	}

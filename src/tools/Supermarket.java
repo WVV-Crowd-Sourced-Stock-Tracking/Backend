@@ -1,15 +1,15 @@
 package tools;
 
 public class Supermarket {
-	private int id;
+	private int market_id;
 	private String name;
 	private Location location;
 	
-	public int getId() {
-		return id;
+	public int getMarket_id() {
+		return market_id;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setMarket_id(int market_id) {
+		this.market_id = market_id;
 	}
 	public String getName() {
 		return name;
