@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -49,8 +50,8 @@ public class Rest extends HttpServlet {
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/transmit
 	 *  JSON input 
 	 	{ 
-			"id_market": 1,
-			"id_product": 1,
+			"market_id": 1,
+			"product_id": 1,
 			"quantity": 100
 		}
 	 *  JSON output
@@ -218,7 +219,7 @@ public class Rest extends HttpServlet {
 	@Path("/market/scrape")
 	public Response marketScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -266,12 +267,27 @@ public class Rest extends HttpServlet {
 		MarketStockResponse res = new MarketStockResponse();
 		try {
 			con = initWS();
-//TODO /get data from DB
-			res.getProduct().add( new MarketStockItem( 1, "test", 50) );
-			
+			String sql = "select s.product_id,p.name,s.quantity from stock s, product p " +
+					 "where s.store_id=? and s.product_id in(?) and s.product_id=p.product_id " +
+					 "order by p.name";
+			PreparedStatement pstmt = con.prepareStatement( sql );
+			pstmt.setInt(1, req.getMarket_id());
+			for ( Integer p :req.getProduct_id() ) {
+				pstmt.setInt(2, p.intValue() );
+				ResultSet rs = pstmt.executeQuery();
+				while( rs.next() ) {
+					res.getProduct().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3) ));
+				}
+				rs.close();
+			}
+			pstmt.close();
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
