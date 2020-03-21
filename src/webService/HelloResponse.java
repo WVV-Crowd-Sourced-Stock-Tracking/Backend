@@ -1,6 +1,8 @@
 package webService;
 
-public class HelloResponse {
+import tools.GenericResponse;
+
+public class HelloResponse extends GenericResponse {
 	private String text = "";
 
 	public String getText() {

@@ -2,22 +2,19 @@
 <!DOCTYPE xml>
 <Context cookies="false">
 
-<!-- 
-	<Resource name="jdbc/xxx"
-              global="jdbc/xxx"
+	<Resource name="jdbc/wvv"
+              global="jdbc/wvv"
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
               auth="Container"
               type="javax.sql.DataSource"       
-              username="deerranch"
-              password="deerranch"
-              driverClassName1="com.mysql.cj.jdbc.Driver"
+              username="wvv"
+              password="wvv"
               driverClassName="org.mariadb.jdbc.Driver"
-              description="Deerranch MySQL database."
-              url="jdbc:mariadb://127.0.0.1:3306/deerranch"
+              description="WVV Maria database."
+              url="jdbc:mariadb://127.0.0.1:3306/wvv"
               maxActive="50"
               maxIdle="10"
               maxWaitMillis="10000"
               removeAbandonedTimeout="300"           
               defaultAutoCommit="false"/>
--->
 </Context>
