@@ -390,18 +390,13 @@ public class Rest extends HttpServlet {
 		GenericResponse res = new GenericResponse();
 		try {
 			con = initWS();
-=======
-//TODO put data into DB
->>>>>>> master
 			
 			if(req.getOperation().equals("create")) {
 				PreparedStatement pstmt = null;
-				pstmt = con.prepareStatement("insert into product name=?");
+				pstmt = con.prepareStatement("insert into product (name) VALUES (?)");
 				pstmt.setString(1, req.getName());
 				ResultSet ret = pstmt.executeQuery();
 				pstmt.close();
-				con.commit();
-				res.setResult("success");
 				con.commit();
 				res.setResult("success");
 			}
