@@ -178,8 +178,8 @@ public class Rest extends HttpServlet {
 	public Response marketScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
