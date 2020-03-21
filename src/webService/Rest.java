@@ -42,7 +42,7 @@ public class Rest extends HttpServlet {
 		}
 	 *  JSON output
 	   	{
-   			"result": "success",
+   			"result": "success"
 		}
 	 */
 	@POST
@@ -123,23 +123,19 @@ public class Rest extends HttpServlet {
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/stock
 	 *  JSON input 
 	 	{
-			"zip":"61231",
-			"radius": 12000,
+			"market_id": 1,
 			"product_id":    [
       			1,
       			2
    			]
 		}
 	 *  JSON output
-	   	{
+		{
 		   "result": "success",
-		   "supermarket": [   {
-		      "id": 0,
-		      "name": "REWA Center Bad Nauheim",
-		      "city": "Bad Nauheim",
-		      "street": "Georg-Scheller-Straße 2-8",
-		      "gps_length": "50°21'43.0\"N",
-		      "gps_width": "8°45'15.2\"E"
+		   "product": [   {
+		      "id": 1,
+		      "product_name": "test",
+		      "quantity": 50
 		   }]
 		}
 	 */
@@ -169,6 +165,48 @@ public class Rest extends HttpServlet {
 	}
 
 	
+	/**
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/manage
+	 *  JSON input 
+		{
+			"operation":"create",
+			"market_id": 1,
+			"name":"REWE",
+			"city":"Bad Nauheim",
+			"zip":"61231",
+			"street":"Georg-Scheller-Strasse 2-8",
+			"gps_length":"8 45'15.2\"E",
+			"gps_width":"50 21'43.0\"N"
+		}	 
+	 *  JSON output
+		{
+		   "result": "success"
+		}
+	 */
+	@POST
+	@Path ("/market/manage")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response marketManage(@Context HttpServletRequest request, MarketManageRequest req) {
+		Response response = null;
+		Connection con = null;
+		GenericResponse res = new GenericResponse();
+		try {
+			con = initWS();
+//TODO put data into DB
+			
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).build();
+		}
+		return response;		
+	}
+
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
@@ -185,10 +223,10 @@ public class Rest extends HttpServlet {
 		}
 	 */
 	@POST
-	@Path ("/product")
+	@Path ("/product/scrape")
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	public Response product(@Context HttpServletRequest request, ProductRequest req) {
+	public Response productScrape(@Context HttpServletRequest request, ProductRequest req) {
 		Response response = null;
 		Connection con = null;
 		ProductResponse res = new ProductResponse();
@@ -219,6 +257,123 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 	
+	
+	/**
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product/manage
+	 *  JSON input 
+		{
+			"operation":"create",
+			"product_id": 1,
+			"name":"Milch",
+			"language":"DE"
+		}	 
+	 *  JSON output
+		{
+		   "result": "success"
+		}
+	 */
+	@POST
+	@Path ("/product/manage")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response productManage(@Context HttpServletRequest request, ProductManageRequest req) {
+		Response response = null;
+		Connection con = null;
+		GenericResponse res = new GenericResponse();
+		try {
+			con = initWS();
+//TODO put data into DB
+			
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).build();
+		}
+		return response;		
+	}
+
+	
+	/**
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/manage
+	 *  JSON input 
+		{
+			"operation":"create",
+			"ean": "0401234567890",
+			"product_id": 1
+		}	 
+	 *  JSON output
+		{
+		   "result": "success"
+		}
+	 */
+	@POST
+	@Path ("/product_ean/manage")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response productEanManage(@Context HttpServletRequest request, ProductEanManageRequest req) {
+		Response response = null;
+		Connection con = null;
+		GenericResponse res = new GenericResponse();
+		try {
+			con = initWS();
+//TODO put data into DB
+			
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).build();
+		}
+		return response;		
+	}
+
+	
+	/**
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/scrape
+	 *  JSON input 
+		{
+			"ean":"0401234567890",
+			"language":"DE"
+		}
+	 *  JSON output
+		{
+		   "result": "success",
+		   "product_id": 1,
+		   "name": "Milch"
+		}
+	 */
+	@POST
+	@Path ("/product_ean/scrape")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response productEanScrape(@Context HttpServletRequest request, ProductEanScrapeRequest req) {
+		Response response = null;
+		Connection con = null;
+		ProductEanScapeResponse res = new ProductEanScapeResponse();
+		try {
+			con = initWS();
+//TODO put data into DB
+			res.setProduct_id( 1 );
+			res.setName( "Milch" );
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).build();
+		}
+		return response;		
+	}
+
 	
 	/**
  	 *	URL http://127.0.0.1:8080/Backend/ws/rest/hello
