@@ -27,8 +27,8 @@ public class SupermarketItem {
 	private String name;
 	private String city;
 	private String street;
-	private long gps_length;
-	private long gps_width;
+	private String gps_length;
+	private String gps_width;
 
 	public int getId() {
 		return id;
@@ -54,16 +54,35 @@ public class SupermarketItem {
 	public void setStreet(String street) {
 		this.street = street;
 	}
-	public long getGps_length() {
+	public String getGps_length() {
 		return gps_length;
 	}
-	public void setGps_length(long gps_length) {
+	public void setGps_length(String gps_length) {
 		this.gps_length = gps_length;
 	}
-	public long getGps_width() {
+	public String getGps_width() {
 		return gps_width;
 	}
-	public void setGps_width(long gps_width) {
+	public void setGps_width(String gps_width) {
+		this.gps_width = gps_width;
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 * @param name
+	 * @param city
+	 * @param street
+	 * @param gps_length
+	 * @param gps_width
+	 */
+	public SupermarketItem(int id, String name, String city, String street, String gps_length, String gps_width) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.city = city;
+		this.street = street;
+		this.gps_length = gps_length;
 		this.gps_width = gps_width;
 	}
 

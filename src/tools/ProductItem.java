@@ -3,7 +3,7 @@ package tools;
 public class ProductItem {
 	private int id = 0;
 	private String product_name = "";
-	private int quantity = 0;
+	private int quantity = 0;	
 	public int getId() {
 		return id;
 	}
@@ -22,4 +22,11 @@ public class ProductItem {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
+	public ProductItem(int id, String product_name, int quantity) {
+		super();
+		this.id = id;
+		this.product_name = product_name;
+		this.quantity = quantity;
+	}
+	
 }

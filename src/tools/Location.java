@@ -1,22 +1,22 @@
 package tools;
 
 public class Location {
-	private long gpsLength;
-	private long gpsWidth;
+	private String gpsLength;
+	private String gpsWidth;
 	private int zip;
 	private String city;
 	private String street;
 	
-	public long getGpsLength() {
+	public String getGpsLength() {
 		return gpsLength;
 	}
-	public void setGpsLength(long gpsLength) {
+	public void setGpsLength(String gpsLength) {
 		this.gpsLength = gpsLength;
 	}
-	public long getGpsWidth() {
+	public String getGpsWidth() {
 		return gpsWidth;
 	}
-	public void setGpsWidth(long gpsHeight) {
+	public void setGpsWidth(String gpsHeight) {
 		this.gpsWidth = gpsHeight;
 	}
 	public int getZip() {
