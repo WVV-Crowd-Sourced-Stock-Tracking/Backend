@@ -53,13 +53,36 @@ public class Rest extends HttpServlet {
 		Response response = null;
 		Connection con = null;
 		GenericResponse res = new GenericResponse();
+		int ret = 0;
 		try {
 			con = initWS();
-//TODO put data into DB
-			
+		
+			PreparedStatement pstmt = null;
+			pstmt = con.prepareStatement("update stock set quantity=? where store_id=? and product_id=?");
+			pstmt.setInt(1, req.getQuantity());
+			pstmt.setInt(2, req.getMarket_id());
+			pstmt.setInt(3, req.getProduct_id());
+			ret = pstmt.executeUpdate();
+			pstmt.close();
+
+			if ( ret == 0 ) {
+				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)");
+				pstmt.setInt(1, req.getMarket_id());
+				pstmt.setInt(2, req.getProduct_id());
+				pstmt.setInt(3, req.getQuantity());
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+			}
+			con.commit();
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -282,6 +305,7 @@ public class Rest extends HttpServlet {
 		GenericResponse res = new GenericResponse();
 		try {
 			con = initWS();
+			
 //TODO put data into DB
 			
 			res.setResult("success");
@@ -360,6 +384,19 @@ public class Rest extends HttpServlet {
 		try {
 			con = initWS();
 //TODO put data into DB
+			
+			String sql = "select e.product_id,p.name from ean_is_kind_of e, product p " +
+						 "where e.ean=? and e.product_id=p.product_id";
+			PreparedStatement pstmt = con.prepareStatement( sql );
+			pstmt.setLong(1, Long.valueOf(req.getEan()));
+			ResultSet rs = pstmt.executeQuery();
+			while( rs.next() ) {
+				String data = rs.getString(1);
+				System.out.println( data );
+			}
+			rs.close();
+			pstmt.close();		
+
 			res.setProduct_id( 1 );
 			res.setName( "Milch" );
 			res.setResult("success");
