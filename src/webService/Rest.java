@@ -98,8 +98,8 @@ public class Rest extends HttpServlet {
 	@Path("/market/transmit")
 	public Response marketTransmitHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 	
@@ -157,8 +157,8 @@ public class Rest extends HttpServlet {
 	@Path("/market/scrape")
 	public Response marketScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 
@@ -212,8 +212,8 @@ public class Rest extends HttpServlet {
 	@Path("/market/stock")
 	public Response marketStockHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 
@@ -301,8 +301,8 @@ public class Rest extends HttpServlet {
 	@Path("/market/manage")
 	public Response marketManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 	
@@ -360,8 +360,8 @@ public class Rest extends HttpServlet {
 	@Path("/product/scrape")
 	public Response productScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 	
@@ -438,8 +438,8 @@ public class Rest extends HttpServlet {
 	@Path("/product/manage")
 	public Response productManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 	
@@ -484,8 +484,8 @@ public class Rest extends HttpServlet {
 	@Path("/product_ean/manage")
 	public Response productEanManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 	
@@ -545,8 +545,8 @@ public class Rest extends HttpServlet {
 	@Path("product_ean/scrape")
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
 	      return response;
 	}
 	
