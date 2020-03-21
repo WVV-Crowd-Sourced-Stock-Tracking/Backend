@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -98,7 +99,7 @@ public class Rest extends HttpServlet {
 	@Path("/market/transmit")
 	public Response marketTransmitHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -139,7 +140,7 @@ public class Rest extends HttpServlet {
 		try {
 //			con = initWS();
 //TODO /get data from DB
-			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Strasse 2-8","8.754167","50.361944"));
+			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Strasse 2-8","8.754167","50.361944",0));
 			
 			res.setResult("success");
 		}
@@ -157,7 +158,20 @@ public class Rest extends HttpServlet {
 	@Path("/market/scrape")
 	public Response marketScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+
+	@OPTIONS
+	@Path("/market/scrape")
+	public Response marketScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -212,7 +226,7 @@ public class Rest extends HttpServlet {
 	@Path("/market/stock")
 	public Response marketStockHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -264,7 +278,7 @@ public class Rest extends HttpServlet {
 	@Path("/market/manage")
 	public Response marketManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -322,7 +336,7 @@ public class Rest extends HttpServlet {
 	@Path("/product/scrape")
 	public Response productScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -371,7 +385,7 @@ public class Rest extends HttpServlet {
 	@Path("/product/manage")
 	public Response productManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -417,7 +431,7 @@ public class Rest extends HttpServlet {
 	@Path("/product_ean/manage")
 	public Response productEanManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -478,7 +492,7 @@ public class Rest extends HttpServlet {
 	@Path("product_ean/scrape")
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
