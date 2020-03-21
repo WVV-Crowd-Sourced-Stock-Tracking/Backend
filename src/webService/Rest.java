@@ -352,10 +352,28 @@ public class Rest extends HttpServlet {
 		GenericResponse res = new GenericResponse();
 		try {
 			con = initWS();
+			PreparedStatement pstmt = null;
 			
-//TODO put data into DB
+			if(req.getOperation().equals("create")) {
+				pstmt = con.prepareStatement("insert into product (name) VALUES (?)");
+				pstmt.setString(1, req.getName());
+			}
 			
+			else if(req.getOperation().equals("update")) {
+				pstmt = con.prepareStatement("update product name=? where id =?");
+				pstmt.setString(1, req.getName());
+			}
+			
+			else if(req.getOperation().equals("delete")) {
+				pstmt = con.prepareStatement("delete product name=? where id =?");
+				pstmt.setString(1, req.getName());
+			}
+			
+			ResultSet ret = pstmt.executeQuery();
+			pstmt.close();
+			con.commit();
 			res.setResult("success");
+			
 		}
 		catch ( Exception ex) {
 			res.setResult( "Exception " + ex.getMessage() );
@@ -364,9 +382,9 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;	
 	}
-
+/*
 	@HEAD
 	@Path("/product/manage")
 	public Response productManageHead(@QueryParam("param1") String param1) {
@@ -375,7 +393,7 @@ public class Rest extends HttpServlet {
 	                           .build();
 	      return response;
 	}
-	
+	*/
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/manage
 	 *  JSON input 
