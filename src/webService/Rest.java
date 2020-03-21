@@ -1,10 +1,5 @@
 package webService;
 
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,11 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.OPTIONS;
@@ -27,7 +18,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URL;
 
 import org.json.simple.JSONObject;
 
@@ -37,13 +27,8 @@ import tools.ProductItem;
 import tools.json_items.SupermarketItem;
 
 @Path("/rest")
-public class Rest extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-	private final static String DBRESOURCE = "jdbc/wvv";
-	private static javax.naming.Context initCtx = null;
-	private static javax.naming.Context envCtx = null;
-	private static DataSource dataSource = null;
-	protected Connection con = null;
+public class Rest extends RestBasis {
+	private static final long serialVersionUID = 2L;
 
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/transmit
@@ -826,35 +811,7 @@ public class Rest extends HttpServlet {
 		return response;
 	}
 
-	private Connection initWS() throws NamingException, SQLException {
-		Connection con = null;
-		boolean ret = true;
-		if (dataSource == null) {
-			if (envCtx == null) {
-				if (initCtx == null) {
-					initCtx = new InitialContext();
-				}
-				envCtx = (javax.naming.Context) initCtx.lookup("java:comp/env");
-			}
-			dataSource = (DataSource) envCtx.lookup(DBRESOURCE);
-			if (dataSource == null) {
-				ret = false;
-			}
-		}
 
-		if (ret) {
-			con = getConnection(); // Get always a DB connection
-		}
-		return con;
-	}
-
-	private Connection getConnection() throws SQLException {
-		Connection con = dataSource.getConnection();
-		if (con != null) {
-			con.setAutoCommit(false);
-		}
-		return con;
-	}
 
 	private void finallyWs(Connection con) {
 		try {
