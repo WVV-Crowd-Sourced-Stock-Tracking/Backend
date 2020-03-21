@@ -1,9 +1,15 @@
 package webService;
 
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -19,6 +25,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URL;
+
+import org.json.simple.JSONObject;
 
 import tools.GenericResponse;
 import tools.ProductItem;
@@ -137,29 +146,61 @@ public class Rest extends HttpServlet {
 		Connection con = null;
 		MarketScrapeResponse res = new MarketScrapeResponse();
 		try {
-//			con = initWS();
+			con = initWS();
 //TODO /get data from DB
+			
+			String zipString = req.getZip();
+			String gps_length = req.getGps_length();
+			String gps_width = req.getGps_width();
+			
+			ResultSet rs = null;
+			List<SupermarketItem> supermarketsList = new ArrayList<SupermarketItem>();
+			
+			if (zipString != null && (gps_length == null || gps_width == null)) {
+				//TODO SQL Alle mit gleicher Zip
+				int zip = Integer.parseInt(zipString);
+				
+				PreparedStatement pstmt = null;
+				pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where location.zip=?");
+				pstmt.setInt(1, zip);
+				rs = pstmt.executeQuery();
+				pstmt.close();
+				
+			}
+			else if (gps_length != null && gps_width != null) {
+				int radius = req.getRadius();
+				//TODO Get Supermarket IDs via API
+
+				JSONObject json = new JSONObject();
+				json.put("zip_code", zipString);
+				json.put("latitude", gps_width);
+				json.put("longitude", gps_length);
+				
+				
+			}
+			
+			
+			if (req.getProduct_id() != null) {
+				//TODO alle Produkte der Supermärkte aus Datenbank suchen und zurueckgeben
+				
+			}
+			
+			rs.close();
+			
+			/**
 			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Strasse 2-8","8.754167","50.361944"));
 			
+			**/
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
-//			finallyWs( con );
+			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
-	}
-	
-	@HEAD
-	@Path("/market/scrape")
-	public Response marketScrapeHead(@QueryParam("param1") String param1) {
-	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
-	  				.build();
-	      return response;
 	}
 
 
