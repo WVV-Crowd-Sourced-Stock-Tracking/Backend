@@ -392,7 +392,7 @@ public class Rest extends HttpServlet {
 		HelloResponse res = new HelloResponse();
 		try {
 			con = initWS();
-			String sql = "select data from hello";
+			String sql = "select location_id from location";
 			PreparedStatement pstmt = con.prepareStatement( sql );
 			ResultSet rs = pstmt.executeQuery();
 			while( rs.next() ) {

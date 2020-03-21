@@ -13,14 +13,14 @@
               description="Postgres database."
               url="jdbc:postgresql://ec2-46-137-84-173.eu-west-1.compute.amazonaws.com:5432/d1ssropt4bpql2"
               ssl="true"
-              maxActive="50"
-              maxIdle="10"
+              maxActive="5"
+              maxIdle="1"
               maxWaitMillis="10000"
               removeAbandonedTimeout="300"           
               defaultAutoCommit="false"/>
 
-<!--  -->              
-	<Resource name="jdbc/wvv"
+             
+	<Resource name="jdbc/wvv1"
               global="jdbc/wvv"
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
               auth="Container"
