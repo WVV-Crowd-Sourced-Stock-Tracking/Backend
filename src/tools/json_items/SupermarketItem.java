@@ -1,5 +1,8 @@
 package tools.json_items;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,6 +32,7 @@ public class SupermarketItem {
 	private String street;
 	private String gps_length;
 	private String gps_width;
+	private List<ProductItem> product = new ArrayList<ProductItem>();
 
 	public int getId() {
 		return id;
@@ -84,6 +88,12 @@ public class SupermarketItem {
 		this.street = street;
 		this.gps_length = gps_length;
 		this.gps_width = gps_width;
+	}
+	public List<ProductItem> getProduct() {
+		return product;
+	}
+	public void setProduct(List<ProductItem> product) {
+		this.product = product;
 	}
 
 }

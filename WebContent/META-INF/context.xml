@@ -7,6 +7,24 @@
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
               auth="Container"
               type="javax.sql.DataSource"       
+              username="jqjbfxsjohmmhe"
+              password="bc7cf56183d22703c7915ffedd717fae431cd6847152ad572035fec60fff33d4"
+              driverClassName="org.postgresql.Driver"
+              description="Postgres database."
+              url="jdbc:postgresql://ec2-46-137-84-173.eu-west-1.compute.amazonaws.com:5432/d1ssropt4bpql2"
+              ssl="true"
+              maxActive="50"
+              maxIdle="10"
+              maxWaitMillis="10000"
+              removeAbandonedTimeout="300"           
+              defaultAutoCommit="false"/>
+
+<!--  -->              
+	<Resource name="jdbc/wvv"
+              global="jdbc/wvv"
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+              auth="Container"
+              type="javax.sql.DataSource"       
               username="wvv"
               password="wvv"
               driverClassName="org.mariadb.jdbc.Driver"
@@ -17,4 +35,5 @@
               maxWaitMillis="10000"
               removeAbandonedTimeout="300"           
               defaultAutoCommit="false"/>
+-->              
 </Context>

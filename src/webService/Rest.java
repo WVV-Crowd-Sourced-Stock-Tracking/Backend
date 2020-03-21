@@ -33,7 +33,7 @@ public class Rest extends HttpServlet {
 
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/transmit
 	 *  JSON input 
 	 	{ 
 			"id_market": 1,
@@ -71,7 +71,7 @@ public class Rest extends HttpServlet {
 
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/scrape
 	 *  JSON input 
 	 	{
 			"zip":"61231",
@@ -119,6 +119,56 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	/**
+	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/stock
+	 *  JSON input 
+	 	{
+			"zip":"61231",
+			"radius": 12000,
+			"product_id":    [
+      			1,
+      			2
+   			]
+		}
+	 *  JSON output
+	   	{
+		   "result": "success",
+		   "supermarket": [   {
+		      "id": 0,
+		      "name": "REWA Center Bad Nauheim",
+		      "city": "Bad Nauheim",
+		      "street": "Georg-Scheller-Straße 2-8",
+		      "gps_length": "50°21'43.0\"N",
+		      "gps_width": "8°45'15.2\"E"
+		   }]
+		}
+	 */
+	@POST
+	@Path ("/market/stock")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response marketStock(@Context HttpServletRequest request, MarketStockRequest req) {
+		Response response = null;
+		Connection con = null;
+		MarketStockResponse res = new MarketStockResponse();
+		try {
+			con = initWS();
+//TODO /get data from DB
+			res.getProduct().add( new ProductItem( 1, "test", 50) );
+			
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).build();
+		}
+		return response;		
+	}
+
+	
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
