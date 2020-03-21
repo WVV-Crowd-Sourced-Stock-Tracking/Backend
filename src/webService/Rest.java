@@ -1,9 +1,15 @@
 package webService;
 
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -12,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -19,8 +26,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URL;
+
+import org.json.simple.JSONObject;
 
 import tools.GenericResponse;
+import tools.MarketStockItem;
 import tools.ProductItem;
 import tools.json_items.SupermarketItem;
 
@@ -82,8 +93,6 @@ public class Rest extends HttpServlet {
 			try {
 				con.rollback();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
@@ -98,11 +107,22 @@ public class Rest extends HttpServlet {
 	@Path("/market/transmit")
 	public Response marketTransmitHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
 	
+	@OPTIONS
+	@Path("/market/transmit")
+	public Response marketTransmitOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/scrape
@@ -137,17 +157,58 @@ public class Rest extends HttpServlet {
 		Connection con = null;
 		MarketScrapeResponse res = new MarketScrapeResponse();
 		try {
-//			con = initWS();
+			con = initWS();
 //TODO /get data from DB
+			
+			String zipString = req.getZip();
+			String gps_length = req.getGps_length();
+			String gps_width = req.getGps_width();
+			
+			ResultSet rs = null;
+			List<SupermarketItem> supermarketsList = new ArrayList<SupermarketItem>();
+			
+			if (zipString != null && (gps_length == null || gps_width == null)) {
+				//TODO SQL Alle mit gleicher Zip
+				int zip = Integer.parseInt(zipString);
+				
+				PreparedStatement pstmt = null;
+				pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where location.zip=?");
+				pstmt.setInt(1, zip);
+				rs = pstmt.executeQuery();
+				pstmt.close();
+				
+			}
+			else if (gps_length != null && gps_width != null) {
+				int radius = req.getRadius();
+				//TODO Get Supermarket IDs via API
+
+				JSONObject json = new JSONObject();
+				json.put("zip_code", zipString);
+				json.put("latitude", gps_width);
+				json.put("longitude", gps_length);
+				
+				
+			}
+			
+			
+			if (req.getProduct_id() != null) {
+				//TODO alle Produkte der Superm�rkte aus Datenbank suchen und zurueckgeben
+				
+			}
+			
+			rs.close();
+			
+			/**
 			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Strasse 2-8","8.754167","50.361944"));
 			
+			**/
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
-//			finallyWs( con );
+			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;		
@@ -158,6 +219,18 @@ public class Rest extends HttpServlet {
 	public Response marketScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origi", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/market/scrape")
+	public Response marketScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -194,7 +267,7 @@ public class Rest extends HttpServlet {
 		try {
 			con = initWS();
 //TODO /get data from DB
-			res.getProduct().add( new ProductItem( 1, "test", 50) );
+			res.getProduct().add( new MarketStockItem( 1, "test", 50) );
 			
 			res.setResult("success");
 		}
@@ -212,11 +285,22 @@ public class Rest extends HttpServlet {
 	@Path("/market/stock")
 	public Response marketStockHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
 
+	@OPTIONS
+	@Path("/market/stock")
+	public Response marketStockOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/manage
@@ -301,7 +385,19 @@ public class Rest extends HttpServlet {
 	@Path("/market/manage")
 	public Response marketManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/market/manage")
+	public Response marketManageOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -330,16 +426,12 @@ public class Rest extends HttpServlet {
 		ProductResponse res = new ProductResponse();
 		try {
 			con = initWS();
-//TODO get data from DB, now just one test record
-			res.getProduct().add( new ProductItem( 1, "Milch", 50) );
-			res.getProduct().add( new ProductItem( 1, "Brot", 100) );
-			
-			String sql = "select data from hello";
+
+			String sql = "select product_id,name from product order by name";
 			PreparedStatement pstmt = con.prepareStatement( sql );
 			ResultSet rs = pstmt.executeQuery();
 			while( rs.next() ) {
-				String data = rs.getString(1);
-				System.out.println( data );
+				res.getProduct().add( new ProductItem( rs.getInt(1), rs.getString(2)) );
 			}
 			rs.close();
 			pstmt.close();		
@@ -347,6 +439,10 @@ public class Rest extends HttpServlet {
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -360,11 +456,22 @@ public class Rest extends HttpServlet {
 	@Path("/product/scrape")
 	public Response productScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
 	
+	@OPTIONS
+	@Path("/product/scrape")
+	public Response productScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product/manage
@@ -438,7 +545,19 @@ public class Rest extends HttpServlet {
 	@Path("/product/manage")
 	public Response productManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/product/manage")
+	public Response productManageOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -464,13 +583,55 @@ public class Rest extends HttpServlet {
 		Response response = null;
 		Connection con = null;
 		GenericResponse res = new GenericResponse();
+		PreparedStatement pstmt = null;
+		int ret = 0;
 		try {
 			con = initWS();
-//TODO put data into DB
-			
-			res.setResult("success");
+			if ( req.getOperation().equalsIgnoreCase("CREATE") ) {
+				pstmt = con.prepareStatement("insert into ean_is_kind_of(ean,product_id) values(?,?)");
+				pstmt.setLong(1, Long.valueOf(req.getEan() ));
+				pstmt.setInt(2, req.getProduct_id());
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+				if ( ret == 1 ) {
+					res.setResult("success");
+				}
+				else {
+					res.setResult("error");
+				}
+			}
+			else if ( req.getOperation().equalsIgnoreCase("UPDATE") ) {
+				pstmt = con.prepareStatement("update ean_is_kind_of set product_id=? where ean=?");
+				pstmt.setInt(1, req.getProduct_id());
+				pstmt.setLong(2, Long.valueOf(req.getEan() ));
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+				if ( ret == 1 ) {
+					res.setResult("success");
+				}
+				else {
+					res.setResult("error");
+				}
+			}
+			else if ( req.getOperation().equalsIgnoreCase("DELETE") ) {
+				pstmt = con.prepareStatement("delete from ean_is_kind_of where ean=?");
+				pstmt.setLong(1, Long.valueOf(req.getEan() ));
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+				if ( ret == 1 ) {
+					res.setResult("success");
+				}
+				else {
+					res.setResult("error");
+				}
+			}
+			con.commit();
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -484,7 +645,19 @@ public class Rest extends HttpServlet {
 	@Path("/product_ean/manage")
 	public Response productEanManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/product_ean/manage")
+	public Response productEanManageOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -513,25 +686,27 @@ public class Rest extends HttpServlet {
 		ProductEanScrapeResponse res = new ProductEanScrapeResponse();
 		try {
 			con = initWS();
-//TODO put data into DB
-			
 			String sql = "select e.product_id,p.name from ean_is_kind_of e, product p " +
 						 "where e.ean=? and e.product_id=p.product_id";
 			PreparedStatement pstmt = con.prepareStatement( sql );
 			pstmt.setLong(1, Long.valueOf(req.getEan()));
 			ResultSet rs = pstmt.executeQuery();
-			while( rs.next() ) {
-				String data = rs.getString(1);
-				System.out.println( data );
+			if( rs.next() ) {
+				res.setProduct_id( rs.getInt(1));
+				res.setName(rs.getString(2));
+				res.setResult("success");
+			}
+			else {
+				res.setResult("not found");
 			}
 			rs.close();
 			pstmt.close();		
-
-			res.setProduct_id( 1 );
-			res.setName( "Milch" );
-			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -545,7 +720,19 @@ public class Rest extends HttpServlet {
 	@Path("product_ean/scrape")
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origi", "*")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/product_ean/scrape")
+	public Response productEanScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -580,6 +767,10 @@ public class Rest extends HttpServlet {
 			res.setText( "HelloWorld " + req.getZahl());
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {

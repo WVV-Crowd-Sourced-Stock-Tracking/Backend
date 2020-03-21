@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tools.GenericResponse;
+import tools.MarketStockItem;
 import tools.ProductItem;
 
 public class MarketStockResponse extends GenericResponse {
-	private List<ProductItem> product = new ArrayList<ProductItem>();
+	private List<MarketStockItem> product = new ArrayList<MarketStockItem>();
 
-	public List<ProductItem> getProduct() {
+	public List<MarketStockItem> getProduct() {
 		return product;
 	}
 
-	public void setProduct(List<ProductItem> product) {
+	public void setProduct(List<MarketStockItem> product) {
 		this.product = product;
 	}
 }
