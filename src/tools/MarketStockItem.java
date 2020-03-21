@@ -1,14 +1,14 @@
 package tools;
 
 public class MarketStockItem {
-	private int id = 0;
+	private int product_id = 0;
 	private String product_name = "";
 	private int quantity = 0;	
-	public int getId() {
-		return id;
+	public int getProduct_id() {
+		return product_id;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setProduct_id(int product_id) {
+		this.product_id = product_id;
 	}
 	public String getProduct_name() {
 		return product_name;
@@ -22,9 +22,9 @@ public class MarketStockItem {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
-	public MarketStockItem(int id, String product_name, int quantity) {
+	public MarketStockItem(int product_id, String product_name, int quantity) {
 		super();
-		this.id = id;
+		this.product_id = product_id;
 		this.product_name = product_name;
 		this.quantity = quantity;
 	}
