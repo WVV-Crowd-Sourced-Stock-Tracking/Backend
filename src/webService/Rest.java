@@ -356,7 +356,7 @@ public class Rest extends HttpServlet {
 	public Response productEanScrape(@Context HttpServletRequest request, ProductEanScrapeRequest req) {
 		Response response = null;
 		Connection con = null;
-		ProductEanScapeResponse res = new ProductEanScapeResponse();
+		ProductEanScrapeResponse res = new ProductEanScrapeResponse();
 		try {
 			con = initWS();
 //TODO put data into DB

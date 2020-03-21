@@ -2,7 +2,7 @@ package webService;
 
 import tools.GenericResponse;
 
-public class ProductEanScapeResponse extends GenericResponse {
+public class ProductEanScrapeResponse extends GenericResponse {
 	private int product_id = 0;
 	private String name = "";
 	public int getProduct_id() {
