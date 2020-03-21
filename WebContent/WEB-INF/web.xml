@@ -27,7 +27,7 @@
    
     <servlet-mapping>
         <servlet-name>jersey-serlvet</servlet-name>
-        <url-pattern>/backend/*</url-pattern>
+        <url-pattern>/ws/*</url-pattern>
     </servlet-mapping>
   
 </web-app>

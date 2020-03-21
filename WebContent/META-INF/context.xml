@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<Context cookies="false">
+
+	<Resource name="jdbc/wvv"
+              global="jdbc/wvv"
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+              auth="Container"
+              type="javax.sql.DataSource"       
+              username="wvv"
+              password="wvv"
+              driverClassName="org.mariadb.jdbc.Driver"
+              description="WVV Maria database."
+              url="jdbc:mariadb://127.0.0.1:3306/wvv"
+              maxActive="50"
+              maxIdle="10"
+              maxWaitMillis="10000"
+              removeAbandonedTimeout="300"           
+              defaultAutoCommit="false"/>
+</Context>
