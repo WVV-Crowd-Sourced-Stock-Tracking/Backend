@@ -22,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import tools.GenericResponse;
+import tools.MarketStockItem;
 import tools.ProductItem;
 import tools.json_items.SupermarketItem;
 
@@ -83,8 +84,6 @@ public class Rest extends HttpServlet {
 			try {
 				con.rollback();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
@@ -104,6 +103,17 @@ public class Rest extends HttpServlet {
 	      return response;
 	}
 	
+	@OPTIONS
+	@Path("/market/transmit")
+	public Response marketTransmitOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/scrape
@@ -163,14 +173,13 @@ public class Rest extends HttpServlet {
 	      return response;
 	}
 
-
 	@OPTIONS
 	@Path("/market/scrape")
 	public Response marketScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -208,7 +217,7 @@ public class Rest extends HttpServlet {
 		try {
 			con = initWS();
 //TODO /get data from DB
-			res.getProduct().add( new ProductItem( 1, "test", 50) );
+			res.getProduct().add( new MarketStockItem( 1, "test", 50) );
 			
 			res.setResult("success");
 		}
@@ -231,6 +240,17 @@ public class Rest extends HttpServlet {
 	      return response;
 	}
 
+	@OPTIONS
+	@Path("/market/stock")
+	public Response marketStockOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/manage
@@ -282,6 +302,18 @@ public class Rest extends HttpServlet {
 	  				.build();
 	      return response;
 	}
+
+	@OPTIONS
+	@Path("/market/manage")
+	public Response marketManageOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
@@ -307,22 +339,22 @@ public class Rest extends HttpServlet {
 		ProductResponse res = new ProductResponse();
 		try {
 			con = initWS();
-//TODO get data from DB, now just one test record
-			res.getProduct().add( new ProductItem( 1, "Milch", 50) );
-			res.getProduct().add( new ProductItem( 1, "Brot", 100) );
-			
-			String sql = "select data from hello";
+
+			String sql = "select product_id,name from product order by name";
 			PreparedStatement pstmt = con.prepareStatement( sql );
 			ResultSet rs = pstmt.executeQuery();
 			while( rs.next() ) {
-				String data = rs.getString(1);
-				System.out.println( data );
+				res.getProduct().add( new ProductItem( rs.getInt(1), rs.getString(2)) );
 			}
 			rs.close();
 			pstmt.close();		
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -341,6 +373,17 @@ public class Rest extends HttpServlet {
 	      return response;
 	}
 	
+	@OPTIONS
+	@Path("/product/scrape")
+	public Response productScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product/manage
@@ -389,6 +432,18 @@ public class Rest extends HttpServlet {
 	  				.build();
 	      return response;
 	}
+
+	@OPTIONS
+	@Path("/product/manage")
+	public Response productManageOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/manage
@@ -411,13 +466,55 @@ public class Rest extends HttpServlet {
 		Response response = null;
 		Connection con = null;
 		GenericResponse res = new GenericResponse();
+		PreparedStatement pstmt = null;
+		int ret = 0;
 		try {
 			con = initWS();
-//TODO put data into DB
-			
-			res.setResult("success");
+			if ( req.getOperation().equalsIgnoreCase("CREATE") ) {
+				pstmt = con.prepareStatement("insert into ean_is_kind_of(ean,product_id) values(?,?)");
+				pstmt.setLong(1, Long.valueOf(req.getEan() ));
+				pstmt.setInt(2, req.getProduct_id());
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+				if ( ret == 1 ) {
+					res.setResult("success");
+				}
+				else {
+					res.setResult("error");
+				}
+			}
+			else if ( req.getOperation().equalsIgnoreCase("UPDATE") ) {
+				pstmt = con.prepareStatement("update ean_is_kind_of set product_id=? where ean=?");
+				pstmt.setInt(1, req.getProduct_id());
+				pstmt.setLong(2, Long.valueOf(req.getEan() ));
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+				if ( ret == 1 ) {
+					res.setResult("success");
+				}
+				else {
+					res.setResult("error");
+				}
+			}
+			else if ( req.getOperation().equalsIgnoreCase("DELETE") ) {
+				pstmt = con.prepareStatement("delete from ean_is_kind_of where ean=?");
+				pstmt.setLong(1, Long.valueOf(req.getEan() ));
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+				if ( ret == 1 ) {
+					res.setResult("success");
+				}
+				else {
+					res.setResult("error");
+				}
+			}
+			con.commit();
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -432,6 +529,18 @@ public class Rest extends HttpServlet {
 	public Response productEanManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/product_ean/manage")
+	public Response productEanManageOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -460,25 +569,27 @@ public class Rest extends HttpServlet {
 		ProductEanScrapeResponse res = new ProductEanScrapeResponse();
 		try {
 			con = initWS();
-//TODO put data into DB
-			
 			String sql = "select e.product_id,p.name from ean_is_kind_of e, product p " +
 						 "where e.ean=? and e.product_id=p.product_id";
 			PreparedStatement pstmt = con.prepareStatement( sql );
 			pstmt.setLong(1, Long.valueOf(req.getEan()));
 			ResultSet rs = pstmt.executeQuery();
-			while( rs.next() ) {
-				String data = rs.getString(1);
-				System.out.println( data );
+			if( rs.next() ) {
+				res.setProduct_id( rs.getInt(1));
+				res.setName(rs.getString(2));
+				res.setResult("success");
+			}
+			else {
+				res.setResult("not found");
 			}
 			rs.close();
 			pstmt.close();		
-
-			res.setProduct_id( 1 );
-			res.setName( "Milch" );
-			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -493,6 +604,18 @@ public class Rest extends HttpServlet {
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/product_ean/scrape")
+	public Response productEanScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Request-Method", "POST")
+	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
 	}
@@ -527,6 +650,10 @@ public class Rest extends HttpServlet {
 			res.setText( "HelloWorld " + req.getZahl());
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {

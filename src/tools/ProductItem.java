@@ -1,14 +1,13 @@
 package tools;
 
 public class ProductItem {
-	private int id = 0;
+	private int product_id = 0;
 	private String product_name = "";
-	private int quantity = 0;	
-	public int getId() {
-		return id;
+	public int getProduct_id() {
+		return product_id;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setProduct_id(int product_id) {
+		this.product_id = product_id;
 	}
 	public String getProduct_name() {
 		return product_name;
@@ -16,17 +15,10 @@ public class ProductItem {
 	public void setProduct_name(String product_name) {
 		this.product_name = product_name;
 	}
-	public int getQuantity() {
-		return quantity;
-	}
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
-	public ProductItem(int id, String product_name, int quantity) {
+	public ProductItem(int product_id, String product_name) {
 		super();
-		this.id = id;
+		this.product_id = product_id;
 		this.product_name = product_name;
-		this.quantity = quantity;
 	}
 	
 }
