@@ -360,22 +360,34 @@ public class Rest extends HttpServlet {
 			}
 			
 			else if(req.getOperation().equals("update")) {
-				pstmt = con.prepareStatement("update product name=? where id =?");
+				pstmt = con.prepareStatement("UPDATE product SET name = ? WHERE product_id = ?");
 				pstmt.setString(1, req.getName());
+				pstmt.setInt(2, req.getProduct_id());
 			}
 			
 			else if(req.getOperation().equals("delete")) {
-				pstmt = con.prepareStatement("delete product name=? where id =?");
-				pstmt.setString(1, req.getName());
+				pstmt = con.prepareStatement("DELETE FROM product WHERE product_id = ?");
+				pstmt.setInt(1, req.getProduct_id());
 			}
 			
-			ResultSet ret = pstmt.executeQuery();
+			int ret = pstmt.executeUpdate();
 			pstmt.close();
 			con.commit();
-			res.setResult("success");
+			if(ret == 1) {
+				res.setResult("success");
+			} else {
+				con.rollback();
+				res.setResult("failed, to many affected rows");
+			}
 			
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
