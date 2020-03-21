@@ -241,16 +241,53 @@ public class Rest extends HttpServlet {
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response marketManage(@Context HttpServletRequest request, MarketManageRequest req) {
+		// TODO edit und delete
 		Response response = null;
 		Connection con = null;
 		GenericResponse res = new GenericResponse();
 		try {
 			con = initWS();
-//TODO put data into DB
-			
-			res.setResult("success");
+				
+				int locationId;
+				
+				String sql = "INSERT INTO location (zip, city, street, gps_length, gps_width) VALUES ("+req.getZip()+", ?, ?, ?, ?) returning location_id";
+				//String sql = "INSERT INTO \"public\".\"location\" (\"zip\", \"city\", \"street\", \"gps_length\", \"gps_width\") VALUES ('61267', 'Neu-Anspach', 'TestStra�e', '123', '456') returning location_id;";
+				// TODO zip nicht in string
+				PreparedStatement pstmt = con.prepareStatement(sql);
+				pstmt.setString(1, req.getCity());
+				pstmt.setString(2, req.getStreet());
+				pstmt.setString(3, req.getGps_length());
+				pstmt.setString(4, req.getGps_width());
+				
+				ResultSet rs = pstmt.executeQuery();
+				rs.next();
+				String data = rs.getString(1);
+				locationId = Integer.parseInt(data);
+				System.out.println(locationId + "Location ID");
+				rs.close();
+				pstmt.close();
+				
+				sql = "INSERT INTO public.store (name, location_id) VALUES (?, "+locationId+") returning store_id";
+				pstmt = con.prepareStatement(sql);
+				pstmt.setString(1, req.getName());
+				//pstmt.setString(2, String.valueOf(locationId));
+				
+				rs = pstmt.executeQuery();
+				rs.next();
+				data = rs.getString(1);
+				req.setMarket_id(Integer.valueOf(data));
+				rs.close();
+				pstmt.close();		
+				
+				con.commit();
+				res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -306,6 +343,7 @@ public class Rest extends HttpServlet {
 			}
 			rs.close();
 			pstmt.close();		
+			con.commit();
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
@@ -352,10 +390,44 @@ public class Rest extends HttpServlet {
 		GenericResponse res = new GenericResponse();
 		try {
 			con = initWS();
-			
+=======
 //TODO put data into DB
+>>>>>>> master
 			
-			res.setResult("success");
+			if(req.getOperation().equals("create")) {
+				PreparedStatement pstmt = null;
+				pstmt = con.prepareStatement("insert into product name=?");
+				pstmt.setString(1, req.getName());
+				ResultSet ret = pstmt.executeQuery();
+				pstmt.close();
+				con.commit();
+				res.setResult("success");
+				con.commit();
+				res.setResult("success");
+			}
+			
+			else if(req.getOperation().equals("update")) {
+				PreparedStatement pstmt = null;
+				pstmt = con.prepareStatement("update product name=? where id =?");
+				pstmt.setString(1, req.getName());
+				pstmt.setInt(2, req.getProduct_id());
+				ResultSet ret = pstmt.executeQuery();
+				pstmt.close();
+				con.commit();
+				res.setResult("success");
+			}
+			
+			else if(req.getOperation().equals("delete")) {
+				PreparedStatement pstmt = null;
+				pstmt = con.prepareStatement("delete product name=? where id =?");
+				pstmt.setString(1, req.getName());
+				pstmt.setInt(2, req.getProduct_id());
+				ResultSet ret = pstmt.executeQuery();
+				pstmt.close();
+				con.commit();
+				res.setResult("success");
+			}
+			
 		}
 		catch ( Exception ex) {
 			res.setResult( "Exception " + ex.getMessage() );
@@ -572,6 +644,5 @@ public class Rest extends HttpServlet {
 		} 
 		catch (SQLException e) {
 		}
-	}
-	
+	}	
 }
