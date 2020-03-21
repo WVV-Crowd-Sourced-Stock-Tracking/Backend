@@ -36,16 +36,15 @@ import tools.MarketStockItem;
 import tools.ProductItem;
 import tools.json_items.SupermarketItem;
 
-@Path ("/rest")
+@Path("/rest")
 public class Rest extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final static String DBRESOURCE = "jdbc/wvv";
 	private static javax.naming.Context initCtx = null;
-	private static javax.naming.Context envCtx  = null;
+	private static javax.naming.Context envCtx = null;
 	private static DataSource dataSource = null;
 	protected Connection con = null;
 
-	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/transmit
 	 *  JSON input 
@@ -60,9 +59,9 @@ public class Rest extends HttpServlet {
 		}
 	 */
 	@POST
-	@Path ("/market/transmit")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/market/transmit")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response marketTransmit(@Context HttpServletRequest request, MarketTransmitRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -70,7 +69,7 @@ public class Rest extends HttpServlet {
 		int ret = 0;
 		try {
 			con = initWS();
-		
+
 			PreparedStatement pstmt = null;
 			pstmt = con.prepareStatement("update stock set quantity=? where store_id=? and product_id=?");
 			pstmt.setInt(1, req.getQuantity());
@@ -79,7 +78,7 @@ public class Rest extends HttpServlet {
 			ret = pstmt.executeUpdate();
 			pstmt.close();
 
-			if ( ret == 0 ) {
+			if (ret == 0) {
 				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)");
 				pstmt.setInt(1, req.getMarket_id());
 				pstmt.setInt(2, req.getProduct_id());
@@ -89,19 +88,17 @@ public class Rest extends HttpServlet {
 			}
 			con.commit();
 			res.setResult("success");
-		}
-		catch ( Exception ex) {
+		} catch (Exception ex) {
 			try {
 				con.rollback();
 			} catch (SQLException e) {
 			}
-			res.setResult( "Exception " + ex.getMessage() );
-		}
-		finally {
-			finallyWs( con );
+			res.setResult("Exception " + ex.getMessage());
+		} finally {
+			finallyWs(con);
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
 
 	@HEAD
@@ -126,33 +123,16 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/scrape
-	 *  JSON input 
-	 	{
-			"zip":"61231",
-			"radius": 12000,
-			"product_id":    [
-      			1,
-      			2
-   			]
-		}
-	 *  JSON output
-	   	{
-		   "result": "success",
-		   "supermarket": [   {
-		      "id": 0,
-		      "name": "REWA Center Bad Nauheim",
-		      "city": "Bad Nauheim",
-		      "street": "Georg-Scheller-Straße 2-8",
-		      "gps_length": "8.754167",
-		      "gps_width": "50.361944"
-		   }]
-		}
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/scrape JSON input {
+	 * "zip":"61231", "radius": 12000, "product_id": [ 1, 2 ] } JSON output {
+	 * "result": "success", "supermarket": [ { "id": 0, "name": "REWA Center Bad
+	 * Nauheim", "city": "Bad Nauheim", "street": "Georg-Scheller-Straße 2-8",
+	 * "gps_length": "8.754167", "gps_width": "50.361944" }] }
 	 */
 	@POST
-	@Path ("/market/scrape")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/market/scrape")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response marketScrape(@Context HttpServletRequest request, MarketScrapeRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -212,9 +192,9 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
-	
+
 	@HEAD
 	@Path("/market/scrape")
 	public Response marketScrapeHead(@QueryParam("param1") String param1) {
@@ -238,29 +218,14 @@ public class Rest extends HttpServlet {
 
 
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/stock
-	 *  JSON input 
-	 	{
-			"market_id": 1,
-			"product_id":    [
-      			1,
-      			2
-   			]
-		}
-	 *  JSON output
-		{
-		   "result": "success",
-		   "product": [   {
-		      "id": 1,
-		      "product_name": "test",
-		      "quantity": 50
-		   }]
-		}
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/stock JSON input {
+	 * "market_id": 1, "product_id": [ 1, 2 ] } JSON output { "result": "success",
+	 * "product": [ { "id": 1, "product_name": "test", "quantity": 50 }] }
 	 */
 	@POST
-	@Path ("/market/stock")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/market/stock")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response marketStock(@Context HttpServletRequest request, MarketStockRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -294,7 +259,7 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
 
 	@HEAD
@@ -319,82 +284,178 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/manage
-	 *  JSON input 
-		{
-			"operation":"create",
-			"market_id": 1,
-			"name":"REWE",
-			"city":"Bad Nauheim",
-			"zip":"61231",
-			"street":"Georg-Scheller-Strasse 2-8",
-			"gps_length":"8.754167",
-			"gps_width":"50.361944"
-		}	 
-	 *  JSON output
-		{
-		   "result": "success"
-		}
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/manage JSON input {
+	 * "operation":"create", "market_id": 1, "name":"REWE", "city":"Bad Nauheim",
+	 * "zip":"61231", "street":"Georg-Scheller-Strasse 2-8",
+	 * "gps_length":"8.754167", "gps_width":"50.361944" } JSON output { "result":
+	 * "success" }
 	 */
 	@POST
-	@Path ("/market/manage")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/market/manage")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response marketManage(@Context HttpServletRequest request, MarketManageRequest req) {
 		// TODO edit und delete
-		Response response = null;
-		Connection con = null;
 		GenericResponse res = new GenericResponse();
+		Response response = null;
+
 		try {
-			con = initWS();
-				
 				int locationId;
-				
-				String sql = "INSERT INTO location (zip, city, street, gps_length, gps_width) VALUES ("+req.getZip()+", ?, ?, ?, ?) returning location_id";
-				//String sql = "INSERT INTO \"public\".\"location\" (\"zip\", \"city\", \"street\", \"gps_length\", \"gps_width\") VALUES ('61267', 'Neu-Anspach', 'TestStra�e', '123', '456') returning location_id;";
-				// TODO zip nicht in string
-				PreparedStatement pstmt = con.prepareStatement(sql);
-				pstmt.setString(1, req.getCity());
-				pstmt.setString(2, req.getStreet());
-				pstmt.setString(3, req.getGps_length());
-				pstmt.setString(4, req.getGps_width());
-				
-				ResultSet rs = pstmt.executeQuery();
-				rs.next();
-				String data = rs.getString(1);
-				locationId = Integer.parseInt(data);
-				System.out.println(locationId + "Location ID");
-				rs.close();
-				pstmt.close();
-				
-				sql = "INSERT INTO public.store (name, location_id) VALUES (?, "+locationId+") returning store_id";
-				pstmt = con.prepareStatement(sql);
-				pstmt.setString(1, req.getName());
-				//pstmt.setString(2, String.valueOf(locationId));
-				
-				rs = pstmt.executeQuery();
-				rs.next();
-				data = rs.getString(1);
-				req.setMarket_id(Integer.valueOf(data));
-				rs.close();
-				pstmt.close();		
-				
-				con.commit();
-				res.setResult("success");
-		}
-		catch ( Exception ex) {
+			switch (req.getOperation()) {
+			case "create":
+				res = marketManageAdd(req);
+				break;
+			case "modify":
+				res = marketManageEdit(req);
+				break;
+			case "delete":
+				res = marketManageDelete(req);
+				break;
+			}
+		} catch (Exception ex) {
 			try {
 				con.rollback();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			res.setResult( "Exception " + ex.getMessage() );
-		}
-		finally {
-			finallyWs( con );
+			res.setResult("Exception " + ex.getMessage());
+		} finally {
+			finallyWs(con);
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
+	}
+	
+	private GenericResponse marketManageDelete(MarketManageRequest req) throws Exception {
+		GenericResponse res = new GenericResponse();
+
+		con = initWS();
+
+		int locationId;
+		// get location id
+		String sql = "Select location_id from store where store_id = ?";
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());
+		
+		ResultSet rs = pstmt.executeQuery();
+		rs.next();
+		locationId = rs.getInt("location_id");
+		
+		rs.close();
+		pstmt.close();
+
+		// delete store first
+		sql = "DELETE FROM store WHERE store_id = ?";
+		
+		pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());
+
+		pstmt.executeUpdate();
+		pstmt.close();
+
+		sql = "DELETE FROM location WHERE location_id = ?";
+		pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, locationId);
+
+		pstmt.executeUpdate();
+		rs.close();
+		pstmt.close();
+
+		con.commit();
+		res.setResult("success");
+
+		return res;
+	}
+	
+	private GenericResponse marketManageEdit(MarketManageRequest req) throws Exception {
+		GenericResponse res = new GenericResponse();
+
+		con = initWS();
+
+		int locationId;
+		// get location id
+		String sql = "Select location_id from store where store_id = ?";
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());	
+		
+		ResultSet rs = pstmt.executeQuery();
+		rs.next();
+		locationId = rs.getInt("location_id");
+		
+		rs.close();
+		pstmt.close();
+
+		// update location
+		sql = "UPDATE location SET zip = ?, city = ?, street = ?, gps_length = ?, gps_width = ? WHERE location_id = ?";
+		
+		pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, Integer.valueOf(req.getZip()));
+		pstmt.setString(2, req.getCity());
+		pstmt.setString(3, req.getStreet());
+		pstmt.setString(4, req.getGps_length());
+		pstmt.setString(5, req.getGps_width());
+		pstmt.setInt(6, locationId);
+
+		pstmt.executeUpdate();
+		pstmt.close();
+
+		sql = "UPDATE store SET name = ? WHERE store_id = ?";
+		pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, req.getName());
+		pstmt.setInt(2, req.getMarket_id());
+
+		pstmt.executeUpdate();
+		rs.close();
+		pstmt.close();
+
+		con.commit();
+		res.setResult("success");
+
+		return res;
+	}
+
+	private GenericResponse marketManageAdd(MarketManageRequest req) throws Exception {
+		GenericResponse res = new GenericResponse();
+
+		con = initWS();
+
+		int locationId;
+
+		String sql = "INSERT INTO location (zip, city, street, gps_length, gps_width) VALUES (?, ?, ?, ?, ?) returning location_id";
+		// String sql = "INSERT INTO \"public\".\"location\" (\"zip\", \"city\",
+		// \"street\", \"gps_length\", \"gps_width\") VALUES ('61267', 'Neu-Anspach',
+		// 'TestStra�e', '123', '456') returning location_id;";
+		// TODO zip nicht in string
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, Integer.valueOf(req.getZip()));
+		pstmt.setString(2, req.getCity());
+		pstmt.setString(3, req.getStreet());
+		pstmt.setString(4, req.getGps_length());
+		pstmt.setString(5, req.getGps_width());
+
+		ResultSet rs = pstmt.executeQuery();
+		rs.next();
+		String data = rs.getString(1);
+		locationId = Integer.parseInt(data);
+		rs.close();
+		pstmt.close();
+
+		sql = "INSERT INTO public.store (name, location_id) VALUES (?, " + locationId + ") returning store_id";
+		pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, req.getName());
+		// pstmt.setString(2, String.valueOf(locationId));
+
+		rs = pstmt.executeQuery();
+		rs.next();
+		data = rs.getString(1);
+		req.setMarket_id(Integer.valueOf(data));
+		rs.close();
+		pstmt.close();
+
+		con.commit();
+		res.setResult("success");
+
+		return res;
 	}
 
 	@HEAD
@@ -419,23 +480,15 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
-	 *  JSON input 
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/product JSON input
 	 * 
-	 *  JSON output
-	   	{
-   			"result": "success",
-   			"product": [   {
-      			"id": 1,
-      			"product_name": "Milch",
-      			"quantity": 50
-   			}]
-		}
+	 * JSON output { "result": "success", "product": [ { "id": 1, "product_name":
+	 * "Milch", "quantity": 50 }] }
 	 */
 	@POST
-	@Path ("/product/scrape")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/product/scrape")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response productScrape(@Context HttpServletRequest request, ProductRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -465,7 +518,7 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
 
 	@HEAD
@@ -490,71 +543,61 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product/manage
-	 *  JSON input 
-		{
-			"operation":"create",
-			"product_id": 1,
-			"name":"Milch",
-			"language":"DE"
-		}	 
-	 *  JSON output
-		{
-		   "result": "success"
-		}
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/product/manage JSON input {
+	 * "operation":"create", "product_id": 1, "name":"Milch", "language":"DE" } JSON
+	 * output { "result": "success" }
 	 */
 	@POST
-	@Path ("/product/manage")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/product/manage")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response productManage(@Context HttpServletRequest request, ProductManageRequest req) {
 		Response response = null;
 		Connection con = null;
 		GenericResponse res = new GenericResponse();
 		try {
 			con = initWS();
-			
-			if(req.getOperation().equals("create")) {
-				PreparedStatement pstmt = null;
+			PreparedStatement pstmt = null;
+
+			if (req.getOperation().equals("create")) {
 				pstmt = con.prepareStatement("insert into product (name) VALUES (?)");
 				pstmt.setString(1, req.getName());
-				ResultSet ret = pstmt.executeQuery();
-				pstmt.close();
-				con.commit();
-				res.setResult("success");
 			}
-			
-			else if(req.getOperation().equals("update")) {
-				PreparedStatement pstmt = null;
-				pstmt = con.prepareStatement("update product name=? where id =?");
+
+			else if (req.getOperation().equals("update")) {
+				pstmt = con.prepareStatement("UPDATE product SET name = ? WHERE product_id = ?");
 				pstmt.setString(1, req.getName());
 				pstmt.setInt(2, req.getProduct_id());
-				ResultSet ret = pstmt.executeQuery();
-				pstmt.close();
-				con.commit();
-				res.setResult("success");
 			}
-			
-			else if(req.getOperation().equals("delete")) {
-				PreparedStatement pstmt = null;
-				pstmt = con.prepareStatement("delete product name=? where id =?");
-				pstmt.setString(1, req.getName());
-				pstmt.setInt(2, req.getProduct_id());
-				ResultSet ret = pstmt.executeQuery();
-				pstmt.close();
-				con.commit();
-				res.setResult("success");
+
+			else if (req.getOperation().equals("delete")) {
+				pstmt = con.prepareStatement("DELETE FROM product WHERE product_id = ?");
+				pstmt.setInt(1, req.getProduct_id());
 			}
-			
-		}
-		catch ( Exception ex) {
-			res.setResult( "Exception " + ex.getMessage() );
-		}
-		finally {
-			finallyWs( con );
+
+			int ret = pstmt.executeUpdate();
+			pstmt.close();
+			con.commit();
+			if (ret == 1) {
+				res.setResult("success");
+			} else {
+				con.rollback();
+				res.setResult("failed, to many affected rows");
+			}
+
+		} catch (Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			res.setResult("Exception " + ex.getMessage());
+		} finally {
+			finallyWs(con);
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
 
 	@HEAD
@@ -579,22 +622,14 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/manage
-	 *  JSON input 
-		{
-			"operation":"create",
-			"ean": "0401234567890",
-			"product_id": 1
-		}	 
-	 *  JSON output
-		{
-		   "result": "success"
-		}
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/manage JSON input {
+	 * "operation":"create", "ean": "0401234567890", "product_id": 1 } JSON output {
+	 * "result": "success" }
 	 */
 	@POST
-	@Path ("/product_ean/manage")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/product_ean/manage")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response productEanManage(@Context HttpServletRequest request, ProductEanManageRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -654,7 +689,7 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
 
 	@HEAD
@@ -679,23 +714,14 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
-	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/scrape
-	 *  JSON input 
-		{
-			"ean":"0401234567890",
-			"language":"DE"
-		}
-	 *  JSON output
-		{
-		   "result": "success",
-		   "product_id": 1,
-		   "name": "Milch"
-		}
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/scrape JSON input {
+	 * "ean":"0401234567890", "language":"DE" } JSON output { "result": "success",
+	 * "product_id": 1, "name": "Milch" }
 	 */
 	@POST
-	@Path ("/product_ean/scrape")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/product_ean/scrape")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response productEanScrape(@Context HttpServletRequest request, ProductEanScrapeRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -729,15 +755,15 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
 
 	@HEAD
 	@Path("product_ean/scrape")
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
-	  				.build();
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
 	      return response;
 	}
 
@@ -754,16 +780,13 @@ public class Rest extends HttpServlet {
 	}
 	
 	/**
- 	 *	URL http://127.0.0.1:8080/Backend/ws/rest/hello
- 	 *	JSON input	
-			{"zahl":1}
-	 *	JSON output
-			{"text": "HelloWorld 1"}
+	 * URL http://127.0.0.1:8080/Backend/ws/rest/hello JSON input {"zahl":1} JSON
+	 * output {"text": "HelloWorld 1"}
 	 */
 	@POST
-	@Path ("/hello")
-	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/hello")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response hello(@Context HttpServletRequest request, HelloRequest req) {
 		Response response = null;
 		Connection con = null;
@@ -771,11 +794,11 @@ public class Rest extends HttpServlet {
 		try {
 			con = initWS();
 			String sql = "select location_id from location";
-			PreparedStatement pstmt = con.prepareStatement( sql );
+			PreparedStatement pstmt = con.prepareStatement(sql);
 			ResultSet rs = pstmt.executeQuery();
-			while( rs.next() ) {
+			while (rs.next()) {
 				String data = rs.getString(1);
-				System.out.println( data );
+				System.out.println(data);
 			}
 			rs.close();
 			pstmt.close();		
@@ -793,58 +816,53 @@ public class Rest extends HttpServlet {
 			finallyWs( con );
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
-		return response;		
+		return response;
 	}
-	
-	
+
 	@HEAD
 	@Path("/hello")
 	public Response helloHead(@QueryParam("param1") String param1) {
-	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
-	      return response;
+		Response response = Response.ok("this body will be ignored").header("someHeader", "someHeaderValue").build();
+		return response;
 	}
 
-	
 	private Connection initWS() throws NamingException, SQLException {
 		Connection con = null;
 		boolean ret = true;
-		if ( dataSource == null ) {
-			if ( envCtx == null ) {
-				if ( initCtx == null ) {
+		if (dataSource == null) {
+			if (envCtx == null) {
+				if (initCtx == null) {
 					initCtx = new InitialContext();
 				}
-				envCtx = (javax.naming.Context) initCtx.lookup( "java:comp/env" );
+				envCtx = (javax.naming.Context) initCtx.lookup("java:comp/env");
 			}
-			dataSource = (DataSource) envCtx.lookup(DBRESOURCE );
-			if ( dataSource == null ) {
+			dataSource = (DataSource) envCtx.lookup(DBRESOURCE);
+			if (dataSource == null) {
 				ret = false;
 			}
 		}
-		
-		if ( ret ) {
-			con = getConnection();						//Get always a DB connection
+
+		if (ret) {
+			con = getConnection(); // Get always a DB connection
 		}
 		return con;
 	}
-	
+
 	private Connection getConnection() throws SQLException {
 		Connection con = dataSource.getConnection();
-		if ( con != null ) {
+		if (con != null) {
 			con.setAutoCommit(false);
 		}
-		return con; 
+		return con;
 	}
-	
-	private void finallyWs( Connection con ) {
+
+	private void finallyWs(Connection con) {
 		try {
-			if ( con != null ) {
+			if (con != null) {
 				con.close();
 				con = null;
 			}
-		} 
-		catch (SQLException e) {
+		} catch (SQLException e) {
 		}
 	}	
 }
