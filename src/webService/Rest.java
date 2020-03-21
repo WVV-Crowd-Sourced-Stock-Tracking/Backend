@@ -11,9 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -141,6 +143,16 @@ public class Rest extends HttpServlet {
 		}
 		return response;		
 	}
+	
+	@HEAD
+	@Path("/market/scrape")
+	public Response marketScrapeHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
+
 
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/stock
@@ -450,6 +462,17 @@ public class Rest extends HttpServlet {
 		}
 		return response;		
 	}
+	
+	
+	@HEAD
+	@Path("/hello")
+	public Response helloHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
+
 	
 	private Connection initWS() throws NamingException, SQLException {
 		Connection con = null;
