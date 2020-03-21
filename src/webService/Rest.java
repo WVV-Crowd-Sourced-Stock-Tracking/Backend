@@ -94,6 +94,15 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	@HEAD
+	@Path("/market/transmit")
+	public Response marketTransmitHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
+	
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/scrape
@@ -199,6 +208,15 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	@HEAD
+	@Path("/market/stock")
+	public Response marketStockHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
+
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/manage
@@ -242,6 +260,14 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	@HEAD
+	@Path("/market/manage")
+	public Response marketManageHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product
@@ -291,6 +317,15 @@ public class Rest extends HttpServlet {
 		}
 		return response;		
 	}
+
+	@HEAD
+	@Path("/product/scrape")
+	public Response productScrapeHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
 	
 	
 	/**
@@ -332,6 +367,14 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	@HEAD
+	@Path("/product/manage")
+	public Response productManageHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/manage
@@ -370,6 +413,14 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	@HEAD
+	@Path("/product_ean/manage")
+	public Response productEanManageHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
 	
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/product_ean/scrape
@@ -423,6 +474,14 @@ public class Rest extends HttpServlet {
 		return response;		
 	}
 
+	@HEAD
+	@Path("product_ean/scrape")
+	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	                           .header("someHeader", "someHeaderValue")
+	                           .build();
+	      return response;
+	}
 	
 	/**
  	 *	URL http://127.0.0.1:8080/Backend/ws/rest/hello
