@@ -8,16 +8,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-@Path ("/Backend")
+@Path ("/")
 public class Backend {
 
 	@POST
 	@Path ("/product")
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	public ProductResponse product(@Context HttpServletRequest request, ProductRequest req) {
+	public String product(@Context HttpServletRequest request) {
 		ProductResponse response = null;
 		
-		return response;		
+		return "Hello World";		
 	}
 }
