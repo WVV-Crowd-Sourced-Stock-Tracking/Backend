@@ -211,12 +211,10 @@ public class Rest extends RestBasis {
 				res.setSupermarket(marketList);
 				
 				
-				//TODO get supermarket Data from DB matching the IDs
+				
 				
 				
 			}
-			
-			//TODO fill marketList with results from rsMarkets 
 			
 			
 			
@@ -247,7 +245,7 @@ public class Rest extends RestBasis {
 			Iterator<SupermarketItem> marketIterator = marketList.iterator();
 			List<tools.json_items.ProductItem> singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
 			
-			//TODO Done? - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+			//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
 			while (marketIterator.hasNext()) {
 				currMarket = marketIterator.next();
 				
@@ -258,8 +256,8 @@ public class Rest extends RestBasis {
 				pstmt.setString(2, sqlFilter);
 				rsProducts = pstmt.executeQuery();
 				pstmt.close();
-				//TODO einzele Auslese in singleMarketProduts-Liste packen und anschlieﬂend diese in productsInMarket-Liste
 				
+				//TODO einzele Auslese in singleMarketProduts-Liste packen und anschlieﬂend diese in productsInMarket-Liste
 				while( rsProducts.next() ) {
 					tools.ProductCategory productCategory = new tools.ProductCategory();
 					productCategory.setId(rsProducts.getInt("1"));
@@ -274,6 +272,7 @@ public class Rest extends RestBasis {
 				}
 				productsInMarkets.add(singleMarketProducts);				
 			}
+			res.setProductItems(productsInMarkets);
 			
 			rsProducts.close();
 			rsMarkets.close();
