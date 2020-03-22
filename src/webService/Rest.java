@@ -276,6 +276,7 @@ public class Rest extends RestBasis {
 				List<tools.json_items.ProductItem> singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
 				
 				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+				
 				while (marketIterator.hasNext()) {
 					currMarket = marketIterator.next();
 					
@@ -302,9 +303,10 @@ public class Rest extends RestBasis {
 					}
 					rsProducts.close();
 					rsMarkets.close();
-
+					currMarket.setProduct(singleMarketProducts);
 					productsInMarkets.add(singleMarketProducts);		
-				}
+				} 
+				
 				res.setProductItems(productsInMarkets);
 			}
 			
