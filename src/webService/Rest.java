@@ -1,10 +1,13 @@
 package webService;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -159,7 +162,7 @@ public class Rest extends RestBasis {
 			}
 			else if (gps_length != null && gps_width != null) {
 				int radius = req.getRadius();
-				//TODO Get Supermarket IDs via API			
+				// Get Supermarket IDs via API			
 				
 				String get_url = "http://3.120.206.89/markets?latitude=" + gps_width + "&longitude=" + gps_length + "&radius=" + radius;
 				String USER_AGENT = "Mozilla/5.0";
@@ -200,10 +203,44 @@ public class Rest extends RestBasis {
 						market.setOpenNow(objNode.path("open_now").asBoolean());
 						if(marketIsInDb( con, market)) {
 							// load market from db
+							
+							String sql = "";
+							PreparedStatement pstmt2 = null;
+							sql = "select l.zip, l.city, l.street, l.gps_length, l.gps_width from store s, location l "
+									+ "where s.store_id = ? and l.location_id=s.location_id";
+							pstmt2 = con.prepareStatement( sql );
+							pstmt2.setInt(1, market.getMarket_id());
+							ResultSet rs = pstmt2.executeQuery();
+							rs.next();
 							Location location = new Location();
-							location.setStreet(objNode.path("vicinity").asText());
-							location.setGpsLength(objNode.path("longitude").asText());
-							location.setGpsWidth(objNode.path("latitude").asText());
+								location.setZip(rs.getInt(1));
+								location.setCity(rs.getString(2));
+								location.setStreet(rs.getString(3));
+								location.setGpsLength(rs.getString(4));
+								location.setGpsWidth(rs.getString(5));
+							
+							
+							if (!(location.getZip()>500)) {
+								//get zip and address-info from API
+								location = apiGetLocation(market.getGoogle_id(), location);
+								location.setGpsLength(objNode.findPath("longitude").asText());
+								location.setGpsWidth(objNode.findPath("latitude").asText());
+								
+								MarketManageRequest mmr = new MarketManageRequest();
+								market.setLocation(location);
+								
+								mmr.setOperation("modify");
+								mmr.setMarket_id(market.getMarket_id());
+								mmr.setName(market.getName());
+								mmr.setZip(Integer.toString(location.getZip()));
+								mmr.setGps_length(location.getGpsLength());
+								mmr.setGps_width(location.getGpsWidth());
+								mmr.setGoogle_id(market.getGoogle_id());
+								mmr.setStreet(location.getStreet());
+								mmr.setCity(location.getCity());
+								marketManageEdit(con, mmr);
+								market.setMarket_id( mmr.getMarket_id() );
+							}
 							
 							market.setLocation(location);
 							
@@ -211,18 +248,19 @@ public class Rest extends RestBasis {
 							// add market to db
 							MarketManageRequest mmr = new MarketManageRequest();
 							Location location = new Location();
-							location.setStreet(objNode.path("vicinity").asText());
-							location.setGpsLength(objNode.path("longitude").asText());
-							location.setGpsWidth(objNode.path("latitude").asText());
-							
+							location.setGpsLength(objNode.findPath("longitude").asText());
+							location.setGpsWidth(objNode.findPath("latitude").asText());
+							location = apiGetLocation(market.getGoogle_id(), location);
 							market.setLocation(location);
 							
 							mmr.setOperation("create");
 							mmr.setName(market.getName());
+							mmr.setZip(Integer.toString(location.getZip()));
 							mmr.setGps_length(location.getGpsLength());
 							mmr.setGps_width(location.getGpsWidth());
+							mmr.setStreet(location.getStreet());
 							mmr.setGoogle_id(market.getGoogle_id());
-							mmr.setStreet(objNode.path("vicinity").asText());
+							mmr.setCity(location.getCity());
 							marketManageAdd( con, mmr );
 							market.setMarket_id( mmr.getMarket_id() );
 						}
@@ -310,6 +348,43 @@ public class Rest extends RestBasis {
 		return response;
 	}
 	
+	//TODO Google API fuer zip und AdressInfos
+	private Location apiGetLocation(String google_id, Location location) throws IOException {
+
+		String get_url = "http://3.120.206.89/market?place_id=" + google_id;
+		String USER_AGENT = "Mozilla/5.0";
+		URL obj = new URL(get_url);
+		HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+		conn.setRequestMethod("GET");
+		conn.setRequestProperty("User-Agent", USER_AGENT);
+		int responseCode = conn.getResponseCode();
+		System.out.println("GET Response Code :: " + responseCode);
+		if (responseCode == HttpURLConnection.HTTP_OK) { // success
+			InputStream in = conn.getInputStream();
+			
+		    StringBuilder textBuilder = new StringBuilder();
+		    try (Reader reader = new BufferedReader(new InputStreamReader
+		      (in, Charset.forName(StandardCharsets.UTF_8.name())))) {
+		        int c = 0;
+		        while ((c = reader.read()) != -1) {
+		            textBuilder.append((char) c);
+		        }
+		    }
+		    
+			ObjectMapper mapper = new ObjectMapper();
+		    JsonNode objNode = mapper.readTree(textBuilder.toString());
+		    String street = objNode.path("route").asText() + " " + objNode.findPath("street_number").asText();
+			location.setStreet(street);
+			location.setCity(objNode.findPath("locality").asText());
+			location.setZip(objNode.findPath("postal_code").asInt());
+					    
+		}
+		return location;
+		    
+	}
+	
+	
+	
 	private boolean marketIsInDb(Connection con, Supermarket market) {
 		try {
 			String sql = "";
@@ -331,7 +406,7 @@ public class Rest extends RestBasis {
 				rs.close();
 				pstmt.close();
 				
-				return count == 1;
+				return count >= 1;
 		}
 		catch ( Exception ex) {
 			try {
