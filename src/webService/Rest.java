@@ -3,8 +3,11 @@ package webService;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +31,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.json.simple.JSONObject;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tools.GenericResponse;
 import tools.Location;
@@ -170,20 +179,51 @@ public class Rest extends RestBasis {
 				System.out.println("GET Response Code :: " + responseCode);
 				if (responseCode == HttpURLConnection.HTTP_OK) { // success
 					InputStream in = conn.getInputStream();
-					JsonReader jsonReader = Json.createReader(in);
-					JsonArray jsonArray = jsonReader.readArray();
 					
-					for(int i=0; i<jsonArray.size(); i++) {
-						JsonObject jsonObj = jsonArray.getJsonObject(i);
+				    StringBuilder textBuilder = new StringBuilder();
+				    try (Reader reader = new BufferedReader(new InputStreamReader
+				      (in, Charset.forName(StandardCharsets.UTF_8.name())))) {
+				        int c = 0;
+				        while ((c = reader.read()) != -1) {
+				            textBuilder.append((char) c);
+				        }
+				    }
+				    
+					ObjectMapper mapper = new ObjectMapper();
+				    JsonNode actualObj = mapper.readTree(textBuilder.toString());
+				    if (actualObj.isArray()) {
+				        for (final JsonNode objNode : actualObj) {
+				            System.out.println(objNode);
+				            JsonNode n = objNode.path("name");
+				            String a = n.asText();
+				            System.out.println(a);
+				        }
+				    }
+				    
+/*					
+					JsonObject json;
+					  try {
+					    JsonElement element = new JsonParser().parse(
+					    new InputStreamReader(in)
+					  );
+					  json = element.getAsJsonObject();
+					} catch (IOException e) {
+					  throw new RuntimeException(e.getLocalizedMessage());
+					}
+*/				
+//					JsonReader jsonReader = Json.createReader(in);
+//					JsonArray jsonArray = jsonReader.readArray();
+									
+					for(final JsonNode objNode : actualObj) {
 						Supermarket market = new Supermarket();
-						market.setName(jsonObj.getString("name"));
-						market.setGoogle_id(jsonObj.getString("id"));
-						if(marketIsInDb(market)) {
+						market.setName(objNode.path("name").asText());
+						market.setGoogle_id(objNode.path("id").asText());
+						if(marketIsInDb( con, market)) {
 							// load market from db
 							Location location = new Location();
-							location.setStreet(jsonObj.getString("vicinity"));
-							location.setGpsLength(jsonObj.getString("longitude"));
-							location.setGpsWidth(jsonObj.getString("latitude"));
+							location.setStreet(objNode.path("vicinity").asText());
+							location.setGpsLength(objNode.path("longitude").asText());
+							location.setGpsWidth(objNode.path("latitude").asText());
 							
 							market.setLocation(location);
 							
@@ -191,9 +231,9 @@ public class Rest extends RestBasis {
 							// add market to db
 							MarketManageRequest mmr = new MarketManageRequest();
 							Location location = new Location();
-							location.setStreet(jsonObj.getString("vicinity"));
-							location.setGpsLength(jsonObj.getString("longitude"));
-							location.setGpsWidth(jsonObj.getString("latitude"));
+							location.setStreet(objNode.path("vicinity").asText());
+							location.setGpsLength(objNode.path("longitude").asText());
+							location.setGpsWidth(objNode.path("latitude").asText());
 							
 							market.setLocation(location);
 							
@@ -220,7 +260,7 @@ public class Rest extends RestBasis {
 			
 			//Unterscheidung, ob mit Produktfilter oder ohne
 			String sqlFilter;
-			if (req.getProduct_id() != null) {
+			if (req.getProduct_id().size() > 0) {
 				//gefilterte sql Abfrage-Kriterien vorbereiten
 				Iterator<Integer> productIDIterator = req.getProduct_id().iterator();
 				StringBuilder sb = new StringBuilder();
@@ -238,44 +278,46 @@ public class Rest extends RestBasis {
 				sqlFilter = "";
 			}
 			
-			
-			//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
-			SupermarketItem currMarket;
-			List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
-			Iterator<SupermarketItem> marketIterator = marketList.iterator();
-			List<tools.json_items.ProductItem> singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
-			
-			//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
-			while (marketIterator.hasNext()) {
-				currMarket = marketIterator.next();
+			if (req.getProduct_id().size() > 0) {
+				//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
+				SupermarketItem currMarket;
+				List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
+				Iterator<SupermarketItem> marketIterator = marketList.iterator();
+				List<tools.json_items.ProductItem> singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
 				
-				//Create ProductID-String for sql query
-				PreparedStatement pstmt = null;
-				pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? ? order by s.quantity desc");
-				pstmt.setInt(1, currMarket.getMarket_id());
-				pstmt.setString(2, sqlFilter);
-				rsProducts = pstmt.executeQuery();
-				pstmt.close();
-				
-				//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
-				while( rsProducts.next() ) {
-					tools.ProductCategory productCategory = new tools.ProductCategory();
-					productCategory.setId(rsProducts.getInt("1"));
-					productCategory.setName(rsProducts.getString("2"));
+				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+				while (marketIterator.hasNext()) {
+					currMarket = marketIterator.next();
 					
-					tools.Product singleProduct = new tools.Product(productCategory);
-					singleProduct.setQuantity(rsProducts.getInt("3"));
+					//Create ProductID-String for sql query
+					PreparedStatement pstmt = null;
+					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? ? order by s.quantity desc");
+					pstmt.setInt(1, currMarket.getMarket_id());
+					pstmt.setString(2, sqlFilter);
+					rsProducts = pstmt.executeQuery();
+					pstmt.close();
 					
-					tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
-					
-					singleMarketProducts.add(jsonProductItem);
+					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
+					while( rsProducts.next() ) {
+						tools.ProductCategory productCategory = new tools.ProductCategory();
+						productCategory.setId(rsProducts.getInt("1"));
+						productCategory.setName(rsProducts.getString("2"));
+						
+						tools.Product singleProduct = new tools.Product(productCategory);
+						singleProduct.setQuantity(rsProducts.getInt("3"));
+						
+						tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
+						
+						singleMarketProducts.add(jsonProductItem);
+					}
+					rsProducts.close();
+					rsMarkets.close();
+
+					productsInMarkets.add(singleMarketProducts);		
 				}
-				productsInMarkets.add(singleMarketProducts);				
+				res.setProductItems(productsInMarkets);
 			}
-			res.setProductItems(productsInMarkets);
 			
-			rsProducts.close();
-			rsMarkets.close();
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
@@ -288,25 +330,24 @@ public class Rest extends RestBasis {
 		return response;
 	}
 	
-	private boolean marketIsInDb(Supermarket market) {
+	private boolean marketIsInDb(Connection con, Supermarket market) {
 		Response response = null;
-		Connection con = null;
 		try {
-			con = initWS();
 			String sql = "";
 			PreparedStatement pstmt = null;
-				sql = "select store.store_id from store"
+				sql = "select store.store_id from store "
 					+ "where store.google_id = ?";
 				pstmt = con.prepareStatement( sql );
 				pstmt.setString(1, market.getGoogle_id());
 				
 				ResultSet rs = pstmt.executeQuery();
 				int count = 0;
+				int storeId = 0;
 				while(rs.next()) {
-					int storeId = rs.getInt("store_id");
+					storeId = rs.getInt("store_id");
 					count++;
 				}
-				market.setMarket_id(rs.getInt("store_id"));
+				market.setMarket_id(storeId);
 				
 				rs.close();
 				pstmt.close();
