@@ -180,6 +180,12 @@ public class Rest extends RestBasis {
 						market.setGoogle_id(jsonObj.getString("id"));
 						if(marketIsInDb(market)) {
 							// load market from db
+							Location location = new Location();
+							location.setStreet(jsonObj.getString("vicinity"));
+							location.setGpsLength(jsonObj.getString("longitude"));
+							location.setGpsWidth(jsonObj.getString("latitude"));
+							
+							market.setLocation(location);
 							
 						} else {
 							// add market to db
@@ -198,10 +204,11 @@ public class Rest extends RestBasis {
 							mmr.setGoogle_id(market.getGoogle_id());
 						}
 						
-						marketList.add(new SupermarketItem(market));
-						
+						marketList.add(new SupermarketItem(market));						
 					}
 				}
+				
+				res.setSupermarket(marketList);
 				
 				
 				//TODO get supermarket Data from DB matching the IDs
