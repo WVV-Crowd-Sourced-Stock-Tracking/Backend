@@ -16,10 +16,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
@@ -32,16 +28,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.json.simple.JSONObject;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tools.GenericResponse;
 import tools.Location;
 import tools.MarketStockItem;
-import tools.Product;
 import tools.ProductItem;
 import tools.Supermarket;
 import tools.json_items.SupermarketItem;
@@ -144,7 +137,6 @@ public class Rest extends RestBasis {
 		MarketScrapeResponse res = new MarketScrapeResponse();
 		try {
 			con = initWS();
-//TODO /get data from DB
 			
 			String zipString = req.getZip();
 			String gps_length = req.getGps_length();
@@ -239,14 +231,7 @@ public class Rest extends RestBasis {
 				}
 				
 				res.setSupermarket(marketList);
-				
-				
-				
-				
-				
 			}
-			
-			
 			
 			//Unterscheidung, ob mit Produktfilter oder ohne
 			String sqlFilter;
@@ -268,47 +253,43 @@ public class Rest extends RestBasis {
 				sqlFilter = "";
 			}
 			
-			if (req.getProduct_id().size() > 0) {
-				//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
-				SupermarketItem currMarket;
-				List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
-				Iterator<SupermarketItem> marketIterator = marketList.iterator();
-				List<tools.json_items.ProductItem> singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
+			//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
+			SupermarketItem currMarket;
+			List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
+			Iterator<SupermarketItem> marketIterator = marketList.iterator();
+			List<tools.json_items.ProductItem> singleMarketProducts = null;
+			
+			//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+			
+			while (marketIterator.hasNext()) {
+				currMarket = marketIterator.next();
+				singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
+				//Create ProductID-String for sql query
+				PreparedStatement pstmt = null;
+				pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
+				pstmt.setInt(1, currMarket.getMarket_id());
+				rsProducts = pstmt.executeQuery();
 				
-				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
-				
-				while (marketIterator.hasNext()) {
-					currMarket = marketIterator.next();
+				//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
+				while( rsProducts.next() ) {
+					tools.ProductCategory productCategory = new tools.ProductCategory();
+					productCategory.setId(rsProducts.getInt(1));
+					productCategory.setName(rsProducts.getString(2));
 					
-					//Create ProductID-String for sql query
-					PreparedStatement pstmt = null;
-					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? ? order by s.quantity desc");
-					pstmt.setInt(1, currMarket.getMarket_id());
-					pstmt.setString(2, sqlFilter);
-					rsProducts = pstmt.executeQuery();
-					pstmt.close();
+					tools.Product singleProduct = new tools.Product(productCategory);
+					singleProduct.setQuantity(rsProducts.getInt(3));
 					
-					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
-					while( rsProducts.next() ) {
-						tools.ProductCategory productCategory = new tools.ProductCategory();
-						productCategory.setId(rsProducts.getInt("1"));
-						productCategory.setName(rsProducts.getString("2"));
-						
-						tools.Product singleProduct = new tools.Product(productCategory);
-						singleProduct.setQuantity(rsProducts.getInt("3"));
-						
-						tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
-						
-						singleMarketProducts.add(jsonProductItem);
-					}
-					rsProducts.close();
-					rsMarkets.close();
-					currMarket.setProduct(singleMarketProducts);
-					productsInMarkets.add(singleMarketProducts);		
-				} 
-				
-				res.setProductItems(productsInMarkets);
-			}
+					tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
+					
+					singleMarketProducts.add(jsonProductItem);
+				}
+				rsProducts.close();
+				pstmt.close();
+				currMarket.setProduct(singleMarketProducts);
+				productsInMarkets.add(singleMarketProducts);		
+			} 
+			
+			res.setProductItems(productsInMarkets);
 			
 			res.setResult("success");
 		}
@@ -776,7 +757,6 @@ public class Rest extends RestBasis {
 			try {
 				con.rollback();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			res.setResult("Exception " + ex.getMessage());
