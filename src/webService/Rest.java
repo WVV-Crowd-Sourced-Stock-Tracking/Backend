@@ -113,8 +113,8 @@ public class Rest extends RestBasis {
 	public Response marketTransmitOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -361,6 +361,115 @@ public class Rest extends RestBasis {
 	  				.build();
 	      return response;
 	}
+	
+	@POST
+	@Path("/market/details")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response marketScrape(@Context HttpServletRequest request, MarketDetailsRequest req) {
+		Response response = null;
+		Connection con = null;
+		MarketDetailsResponse res = new MarketDetailsResponse();
+		
+		SupermarketItem supermarketItem = null;
+		try {
+			con = initWS();
+			
+			int id = req.getId();
+			String googleId = req.getMapsId();
+			
+			ResultSet rsMarkets = null;
+			ResultSet rsProducts = null;
+			
+			PreparedStatement pstmt = null;
+			pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where (store.store_id=? or google_id = ?)");
+			pstmt.setInt(1, id);
+			pstmt.setString(2, googleId);
+			rsMarkets = pstmt.executeQuery();
+			
+			Supermarket supermarket = new Supermarket();
+			
+			while(rsMarkets.next() ) {
+				supermarket.setName(rsMarkets.getString("name"));
+				supermarket.setGoogle_id(rsMarkets.getString("google_id"));
+				supermarket.setMarket_id(rsMarkets.getInt("store_id"));
+				
+				Location location = new Location();
+				location.setCity(rsMarkets.getString("city"));
+				location.setStreet(rsMarkets.getString("street"));
+				location.setZip(rsMarkets.getInt("zip"));
+				location.setGpsLength(rsMarkets.getString("gps_length"));
+				location.setGpsWidth(rsMarkets.getString("gps_width"));
+				
+				supermarket.setLocation(location);
+			}
+			pstmt.close();
+			rsMarkets.close();
+			
+			supermarketItem = new SupermarketItem(supermarket);
+			
+			List<tools.json_items.ProductItem> productsInStore = new ArrayList<>();
+
+			//Create ProductID-String for sql query
+			pstmt = null;
+			pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? order by s.quantity desc");
+			pstmt.setInt(1, supermarket.getMarket_id());
+			rsProducts = pstmt.executeQuery();
+				
+			while( rsProducts.next() ) {
+				tools.ProductCategory productCategory = new tools.ProductCategory();
+				productCategory.setId(rsProducts.getInt(1));
+					productCategory.setName(rsProducts.getString(2));
+					
+					tools.Product singleProduct = new tools.Product(productCategory);
+					singleProduct.setQuantity(rsProducts.getInt(3));
+					
+					tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
+					
+					productsInStore.add(jsonProductItem);
+				}
+				rsProducts.close();
+				pstmt.close();
+				
+				supermarketItem.setProducts(productsInStore);
+			
+			res.setSupermarket(supermarketItem);
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+		}
+		return response;
+	}
+	
+	@HEAD
+	@Path("/market/details")
+	public Response marketDetailsHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/market/details")
+	public Response marketDetailsOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
 
 
 	/**
@@ -451,8 +560,8 @@ public class Rest extends RestBasis {
 	public Response marketStockOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -641,8 +750,8 @@ public class Rest extends RestBasis {
 	public Response marketManageOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -704,8 +813,8 @@ public class Rest extends RestBasis {
 	public Response productScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -782,8 +891,8 @@ public class Rest extends RestBasis {
 	public Response productManageOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -874,8 +983,8 @@ public class Rest extends RestBasis {
 	public Response productEanManageOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
@@ -940,8 +1049,8 @@ public class Rest extends RestBasis {
 	public Response productEanScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
 	  				.header("Access-Control-Allow-Origin", "*")
-	  				.header("Access-Control-Request-Method", "POST")
-	  				.header("Access-Control-Request-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
 	  				.build();
 	      return response;
