@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -130,8 +131,9 @@ public class Rest extends RestBasis {
 			String gps_length = req.getGps_length();
 			String gps_width = req.getGps_width();
 			
-			ResultSet rs = null;
-			List<SupermarketItem> supermarketsList = new ArrayList<SupermarketItem>();
+			ResultSet rsMarkets = null;
+			ResultSet rsProducts = null;
+			List<SupermarketItem> marketList = new ArrayList<SupermarketItem>();
 			
 			if (zipString != null && (gps_length == null || gps_width == null)) {
 				//TODO SQL Alle mit gleicher Zip
@@ -140,7 +142,7 @@ public class Rest extends RestBasis {
 				PreparedStatement pstmt = null;
 				pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where location.zip=?");
 				pstmt.setInt(1, zip);
-				rs = pstmt.executeQuery();
+				rsMarkets = pstmt.executeQuery();
 				pstmt.close();
 				
 			}
@@ -152,22 +154,53 @@ public class Rest extends RestBasis {
 				json.put("zip_code", zipString);
 				json.put("latitude", gps_width);
 				json.put("longitude", gps_length);
+				json.put("radius", radius);
+				
+				//TODO get supermarket Data from DB matching the IDs
 				
 				
 			}
 			
+			//TODO fill marketList with results from rsMarkets 
 			
+			
+			
+			
+			List<List<ProductItem>> productsPerMarket = new ArrayList<List<ProductItem>>();
 			if (req.getProduct_id() != null) {
 				//TODO alle Produkte der Superm�rkte aus Datenbank suchen und zurueckgeben
+				SupermarketItem currMarket;
+				Iterator<SupermarketItem> marketIterator = marketList.iterator();
+				List<ProductItem> singleMarketProducts = new ArrayList<ProductItem>();
+				
+				//Create ProductID-String for sql query
+				Iterator<Integer> productIDIterator = req.getProduct_id().iterator();
+				StringBuilder sb = new StringBuilder();
+				int currID;
+				while (productIDIterator.hasNext()) {
+					currID = productIDIterator.next();
+					sb.append(" or p.product_id = ").append(currID);
+				}
+				String sqlProductQuery = sb.toString();
+				
+				while (marketIterator.hasNext()) {
+					//TODO Done? - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+					currMarket = marketIterator.next();
+					
+					PreparedStatement pstmt = null;
+					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? and (?) order by s.quantity desc");
+					pstmt.setInt(1, currMarket.getMarket_id());
+					pstmt.setString(2, sqlProductQuery);
+					rsProducts = pstmt.executeQuery();
+					pstmt.close();
+				}
+				
 				
 			}
 			
-			rs.close();
 			
-			/**
-			res.getSupermarket().add( new SupermarketItem( 0, "REWA Center Bad Nauheim", "Bad Nauheim", "Georg-Scheller-Strasse 2-8","8.754167","50.361944"));
-			
-			**/
+			rsProducts.close();
+			rsMarkets.close();
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
