@@ -157,15 +157,11 @@ public class Rest extends RestBasis {
 			}
 			else if (gps_length != null && gps_width != null) {
 				int radius = req.getRadius();
-				//TODO Get Supermarket IDs via API
-				json.put("zip_code", zipString);
-				json.put("latitude", gps_width);
-				json.put("longitude", gps_length);
-				json.put("radius", radius);
+				//TODO Get Supermarket IDs via API			
 				
-				String GET_URL = "http://3.120.206.89/markets?zip_code=50933&format=json";
+				String get_url = "http://3.120.206.89/markets?latitude=" + gps_width + "&longitude=" + gps_length + "&radius=" + radius;
 				String USER_AGENT = "Mozilla/5.0";
-				URL obj = new URL(GET_URL);
+				URL obj = new URL(get_url);
 				HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
 				conn.setRequestMethod("GET");
 				conn.setRequestProperty("User-Agent", USER_AGENT);
