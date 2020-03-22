@@ -236,9 +236,22 @@ public class Rest extends RestBasis {
 
 
 	/**
-	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/stock JSON input {
-	 * "market_id": 1, "product_id": [ 1, 2 ] } JSON output { "result": "success",
-	 * "product": [ { "id": 1, "product_name": "test", "quantity": 50 }] }
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/stock 
+	 * JSON input version 1
+	 *  {	"market_id": 1, "product_id": [ 1, 2 ] }
+	 * JSON input version 2  
+	 * {	"market_id": 0,	"google_id": "MLTEST","product_id":[1,2	]}
+	 * JSON output 
+	 *  { "result": "success","product": [ { "id": 1, "product_name": "test", "quantity": 50 }] }
+	 * 
+	 * {
+			"market_id": 0,
+			"google_id": "MLTEST",
+			"product_id":    [
+      			1,
+      			2
+   			]
+		}
 	 */
 	@POST
 	@Path("/market/stock")
@@ -250,21 +263,37 @@ public class Rest extends RestBasis {
 		MarketStockResponse res = new MarketStockResponse();
 		try {
 			con = initWS();
-			String sql = "select s.product_id,p.name,s.quantity from stock s, product p " +
+			String sql = "";
+			PreparedStatement pstmt = null;
+			if ( req.getMarket_id() > 0 ) {
+				sql = "select s.product_id,p.name,s.quantity from stock s, product p " +
 					 "where s.store_id=? and s.product_id in(?) and s.product_id=p.product_id " +
 					 "order by p.name";
-			PreparedStatement pstmt = con.prepareStatement( sql );
-			pstmt.setInt(1, req.getMarket_id());
-			for ( Integer p :req.getProduct_id() ) {
-				pstmt.setInt(2, p.intValue() );
-				ResultSet rs = pstmt.executeQuery();
-				while( rs.next() ) {
-					res.getProduct().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3) ));
-				}
-				rs.close();
+				pstmt = con.prepareStatement( sql );
+				pstmt.setInt(1, req.getMarket_id());
 			}
-			pstmt.close();
-			res.setResult("success");
+			else if ( !req.getGoogle_id().isEmpty() ) { 
+				sql = "select s.product_id,p.name,s.quantity from store m, stock s, product p " +
+						 "where m.google_id=? and s.product_id in(?) and m.store_id=s.store_id and s.product_id=p.product_id " +
+						 "order by p.name";
+				pstmt = con.prepareStatement( sql );
+				pstmt.setString(1, req.getGoogle_id());
+			}
+			if ( pstmt != null ) {
+				for ( Integer p :req.getProduct_id() ) {
+					pstmt.setInt(2, p.intValue() );
+					ResultSet rs = pstmt.executeQuery();
+					while( rs.next() ) {
+						res.getProduct().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3) ));
+					}
+					rs.close();
+				}
+				pstmt.close();
+				res.setResult("success");
+			}
+			else {
+				res.setResult("error - no input criteria provided");
+			}
 		}
 		catch ( Exception ex) {
 			try {
