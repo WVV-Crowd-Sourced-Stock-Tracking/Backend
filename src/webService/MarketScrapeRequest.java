@@ -9,6 +9,8 @@ public class MarketScrapeRequest {
 	private String gps_width = "";
 	private int radius = 0;				//UoM = meter
 	private List<Integer> product_id = new ArrayList<Integer>();
+	private boolean details_requested = true;
+	
 	public String getZip() {
 		return zip;
 	}
@@ -39,4 +41,11 @@ public class MarketScrapeRequest {
 	public void setProduct_id(List<Integer> product_id) {
 		this.product_id = product_id;
 	}
+	public boolean isDetails_requested() {
+		return details_requested;
+	}
+	public void setDetails_requested(boolean details_requested) {
+		this.details_requested = details_requested;
+	}	
+	
 }

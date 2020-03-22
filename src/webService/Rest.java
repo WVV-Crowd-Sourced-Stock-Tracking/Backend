@@ -234,64 +234,66 @@ public class Rest extends RestBasis {
 				res.setSupermarket(marketList);
 			}
 			
-			//Unterscheidung, ob mit Produktfilter oder ohne
-			String sqlFilter;
-			if (req.getProduct_id().size() > 0) {
-				//gefilterte sql Abfrage-Kriterien vorbereiten
-				Iterator<Integer> productIDIterator = req.getProduct_id().iterator();
-				StringBuilder sb = new StringBuilder();
-				int currID;
-				sb.append(" and ( ");
-				while (productIDIterator.hasNext()) {
-					currID = productIDIterator.next();
-					sb.append("p.product_id=").append(currID);
-					if (productIDIterator.hasNext()) {sb.append(" or ");}
+			//load products if requested
+			if(req.isDetails_requested()) {
+				//Unterscheidung, ob mit Produktfilter oder ohne
+				String sqlFilter;
+				if (req.getProduct_id().size() > 0) {
+					//gefilterte sql Abfrage-Kriterien vorbereiten
+					Iterator<Integer> productIDIterator = req.getProduct_id().iterator();
+					StringBuilder sb = new StringBuilder();
+					int currID;
+					sb.append(" and ( ");
+					while (productIDIterator.hasNext()) {
+						currID = productIDIterator.next();
+						sb.append("p.product_id=").append(currID);
+						if (productIDIterator.hasNext()) {sb.append(" or ");}
+					}
+					sb.append(") ");
+					sqlFilter = sb.toString();							
+				} else {
+					//alle Produkte abfragen anstatt gefiltert.
+					sqlFilter = "";
 				}
-				sb.append(") ");
-				sqlFilter = sb.toString();							
-			} else {
-				//alle Produkte abfragen anstatt gefiltert.
-				sqlFilter = "";
-			}
-			
-			//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
-			SupermarketItem currMarket;
-			List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
-			Iterator<SupermarketItem> marketIterator = marketList.iterator();
-			List<tools.json_items.ProductItem> singleMarketProducts = null;
-			
-			//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
-			
-			while (marketIterator.hasNext()) {
-				currMarket = marketIterator.next();
-				singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
-				//Create ProductID-String for sql query
-				PreparedStatement pstmt = null;
-				pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
-				pstmt.setInt(1, currMarket.getId());
-				rsProducts = pstmt.executeQuery();
 				
-				//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
-				while( rsProducts.next() ) {
-					tools.ProductCategory productCategory = new tools.ProductCategory();
-					productCategory.setId(rsProducts.getInt(1));
-					productCategory.setName(rsProducts.getString(2));
+				//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
+				SupermarketItem currMarket;
+				List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
+				Iterator<SupermarketItem> marketIterator = marketList.iterator();
+				List<tools.json_items.ProductItem> singleMarketProducts = null;
+				
+				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+				
+				while (marketIterator.hasNext()) {
+					currMarket = marketIterator.next();
+					singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
+					//Create ProductID-String for sql query
+					PreparedStatement pstmt = null;
+					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
+					pstmt.setInt(1, currMarket.getId());
+					rsProducts = pstmt.executeQuery();
 					
-					tools.Product singleProduct = new tools.Product(productCategory);
-					singleProduct.setQuantity(rsProducts.getInt(3));
-					
-					tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
-					
-					singleMarketProducts.add(jsonProductItem);
-				}
-				rsProducts.close();
-				pstmt.close();
-				currMarket.setProducts(singleMarketProducts);
-				productsInMarkets.add(singleMarketProducts);		
-			} 
-			
-			res.setProductItems(productsInMarkets);
-			
+					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
+					while( rsProducts.next() ) {
+						tools.ProductCategory productCategory = new tools.ProductCategory();
+						productCategory.setId(rsProducts.getInt(1));
+						productCategory.setName(rsProducts.getString(2));
+						
+						tools.Product singleProduct = new tools.Product(productCategory);
+						singleProduct.setQuantity(rsProducts.getInt(3));
+						
+						tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
+						
+						singleMarketProducts.add(jsonProductItem);
+					}
+					rsProducts.close();
+					pstmt.close();
+					currMarket.setProducts(singleMarketProducts);
+					productsInMarkets.add(singleMarketProducts);		
+				} 
+				
+				res.setProductItems(productsInMarkets);
+			}	
 			res.setResult("success");
 		}
 		catch ( Exception ex) {

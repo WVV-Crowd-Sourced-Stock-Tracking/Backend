@@ -37,7 +37,7 @@ public class RestBasis extends HttpServlet{
 			dbcpProperties.put("username", "jqjbfxsjohmmhe" );
 			dbcpProperties.put("password", "bc7cf56183d22703c7915ffedd717fae431cd6847152ad572035fec60fff33d4" );
 			dbcpProperties.put("defaultAutoCommit", "FALSE");
-			dbcpProperties.put("maxActive", "5");
+			dbcpProperties.put("maxActive", "1");
 			dbcpProperties.put("ssl", "true");
 
 			dataSource = (BasicDataSource) BasicDataSourceFactory.createDataSource(dbcpProperties);
