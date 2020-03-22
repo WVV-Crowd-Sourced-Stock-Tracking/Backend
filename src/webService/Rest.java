@@ -1,6 +1,7 @@
 package webService;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -12,7 +13,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
@@ -28,6 +32,7 @@ import javax.ws.rs.core.Response;
 import tools.GenericResponse;
 import tools.MarketStockItem;
 import tools.ProductItem;
+import tools.Supermarket;
 import tools.json_items.SupermarketItem;
 
 @Path("/rest")
@@ -162,7 +167,14 @@ public class Rest extends RestBasis {
 				int responseCode = conn.getResponseCode();
 				System.out.println("GET Response Code :: " + responseCode);
 				if (responseCode == HttpURLConnection.HTTP_OK) { // success
-					new InputStreamReader(conn.getInputStream());
+					InputStream in = conn.getInputStream();
+					JsonReader jsonReader = Json.createReader(in);
+					JsonArray jsonArray = jsonReader.readArray();
+					
+					for(int i=0; i<jsonArray.size(); i++) {
+						Supermarket market = new Supermarket();
+						
+					}
 
 				}
 				
@@ -247,9 +259,22 @@ public class Rest extends RestBasis {
 
 
 	/**
-	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/stock JSON input {
-	 * "market_id": 1, "product_id": [ 1, 2 ] } JSON output { "result": "success",
-	 * "product": [ { "id": 1, "product_name": "test", "quantity": 50 }] }
+	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/stock 
+	 * JSON input version 1
+	 *  {	"market_id": 1, "product_id": [ 1, 2 ] }
+	 * JSON input version 2  
+	 * {	"market_id": 0,	"google_id": "MLTEST","product_id":[1,2	]}
+	 * JSON output 
+	 *  { "result": "success","product": [ { "id": 1, "product_name": "test", "quantity": 50 }] }
+	 * 
+	 * {
+			"market_id": 0,
+			"google_id": "MLTEST",
+			"product_id":    [
+      			1,
+      			2
+   			]
+		}
 	 */
 	@POST
 	@Path("/market/stock")
@@ -261,21 +286,37 @@ public class Rest extends RestBasis {
 		MarketStockResponse res = new MarketStockResponse();
 		try {
 			con = initWS();
-			String sql = "select s.product_id,p.name,s.quantity from stock s, product p " +
+			String sql = "";
+			PreparedStatement pstmt = null;
+			if ( req.getMarket_id() > 0 ) {
+				sql = "select s.product_id,p.name,s.quantity from stock s, product p " +
 					 "where s.store_id=? and s.product_id in(?) and s.product_id=p.product_id " +
 					 "order by p.name";
-			PreparedStatement pstmt = con.prepareStatement( sql );
-			pstmt.setInt(1, req.getMarket_id());
-			for ( Integer p :req.getProduct_id() ) {
-				pstmt.setInt(2, p.intValue() );
-				ResultSet rs = pstmt.executeQuery();
-				while( rs.next() ) {
-					res.getProduct().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3) ));
-				}
-				rs.close();
+				pstmt = con.prepareStatement( sql );
+				pstmt.setInt(1, req.getMarket_id());
 			}
-			pstmt.close();
-			res.setResult("success");
+			else if ( !req.getGoogle_id().isEmpty() ) { 
+				sql = "select s.product_id,p.name,s.quantity from store m, stock s, product p " +
+						 "where m.google_id=? and s.product_id in(?) and m.store_id=s.store_id and s.product_id=p.product_id " +
+						 "order by p.name";
+				pstmt = con.prepareStatement( sql );
+				pstmt.setString(1, req.getGoogle_id());
+			}
+			if ( pstmt != null ) {
+				for ( Integer p :req.getProduct_id() ) {
+					pstmt.setInt(2, p.intValue() );
+					ResultSet rs = pstmt.executeQuery();
+					while( rs.next() ) {
+						res.getProduct().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3) ));
+					}
+					rs.close();
+				}
+				pstmt.close();
+				res.setResult("success");
+			}
+			else {
+				res.setResult("error - no input criteria provided");
+			}
 		}
 		catch ( Exception ex) {
 			try {

@@ -33,6 +33,7 @@ public class SupermarketItem {
 	private String gps_length;
 	private String gps_width;
 	private int distance = 0;			//UoM is meter
+	private String google_id = "";
 	private List<ProductItem> product = new ArrayList<ProductItem>();
 
 	public int getMarket_id() {
@@ -78,6 +79,13 @@ public class SupermarketItem {
 	public void setDistance(int distance) {
 		this.distance = distance;
 	}
+	
+	public String getGoogle_id() {
+		return google_id;
+	}
+	public void setGoogle_id(String google_id) {
+		this.google_id = google_id;
+	}
 	/**
 	 * 
 	 * @param id
@@ -87,7 +95,7 @@ public class SupermarketItem {
 	 * @param gps_length
 	 * @param gps_width
 	 */
-	public SupermarketItem(int market_id, String name, String city, String street, String gps_length, String gps_width, int distance) {
+	public SupermarketItem(int market_id, String name, String city, String street, String gps_length, String gps_width, int distance, String google_id) {
 		super();
 		this.market_id = market_id;
 		this.name = name;
@@ -96,6 +104,7 @@ public class SupermarketItem {
 		this.gps_length = gps_length;
 		this.gps_width = gps_width;
 		this.distance = distance;
+		this.google_id = google_id;
 	}
 	public List<ProductItem> getProduct() {
 		return product;
