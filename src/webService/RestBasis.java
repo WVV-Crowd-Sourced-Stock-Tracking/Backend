@@ -22,7 +22,7 @@ public class RestBasis extends HttpServlet{
 	
 	private static BasicDataSource dataSource = null;
 
-	protected Connection con = null;
+//	protected Connection con = null;
 
 	protected Connection initWS() throws Exception {
 		Connection con = null;

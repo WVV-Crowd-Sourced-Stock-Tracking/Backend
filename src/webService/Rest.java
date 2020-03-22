@@ -199,25 +199,12 @@ public class Rest extends RestBasis {
 				            System.out.println(a);
 				        }
 				    }
-				    
-/*					
-					JsonObject json;
-					  try {
-					    JsonElement element = new JsonParser().parse(
-					    new InputStreamReader(in)
-					  );
-					  json = element.getAsJsonObject();
-					} catch (IOException e) {
-					  throw new RuntimeException(e.getLocalizedMessage());
-					}
-*/				
-//					JsonReader jsonReader = Json.createReader(in);
-//					JsonArray jsonArray = jsonReader.readArray();
-									
+	    
 					for(final JsonNode objNode : actualObj) {
 						Supermarket market = new Supermarket();
 						market.setName(objNode.path("name").asText());
 						market.setGoogle_id(objNode.path("id").asText());
+						market.setDistance(objNode.path("distance").asText());
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							Location location = new Location();
@@ -242,6 +229,9 @@ public class Rest extends RestBasis {
 							mmr.setGps_length(location.getGpsLength());
 							mmr.setGps_width(location.getGpsWidth());
 							mmr.setGoogle_id(market.getGoogle_id());
+							mmr.setStreet(objNode.path("vicinity").asText());
+							marketManageAdd( con, mmr );
+							market.setMarket_id( mmr.getMarket_id() );
 						}
 						
 						marketList.add(new SupermarketItem(market));						
@@ -321,6 +311,10 @@ public class Rest extends RestBasis {
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
 		finally {
@@ -331,7 +325,6 @@ public class Rest extends RestBasis {
 	}
 	
 	private boolean marketIsInDb(Connection con, Supermarket market) {
-		Response response = null;
 		try {
 			String sql = "";
 			PreparedStatement pstmt = null;
@@ -493,21 +486,21 @@ public class Rest extends RestBasis {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response marketManage(@Context HttpServletRequest request, MarketManageRequest req) {
-		// TODO edit und delete
+		Connection con = null;
 		GenericResponse res = new GenericResponse();
 		Response response = null;
 
 		try {
-				int locationId;
+			con = initWS();
 			switch (req.getOperation()) {
 			case "create":
-				res = marketManageAdd(req);
+				res = marketManageAdd(con, req);
 				break;
 			case "modify":
-				res = marketManageEdit(req);
+				res = marketManageEdit(con, req);
 				break;
 			case "delete":
-				res = marketManageDelete(req);
+				res = marketManageDelete( con, req);
 				break;
 			}
 		} catch (Exception ex) {
@@ -524,11 +517,8 @@ public class Rest extends RestBasis {
 		return response;
 	}
 	
-	private GenericResponse marketManageDelete(MarketManageRequest req) throws Exception {
+	private GenericResponse marketManageDelete(Connection con, MarketManageRequest req) throws Exception {
 		GenericResponse res = new GenericResponse();
-
-		con = initWS();
-
 		int locationId;
 		// get location id
 		String sql = "Select location_id from store where store_id = ?";
@@ -565,11 +555,8 @@ public class Rest extends RestBasis {
 		return res;
 	}
 	
-	private GenericResponse marketManageEdit(MarketManageRequest req) throws Exception {
+	private GenericResponse marketManageEdit(Connection con, MarketManageRequest req) throws Exception {
 		GenericResponse res = new GenericResponse();
-
-		con = initWS();
-
 		int locationId;
 		// get location id
 		String sql = "Select location_id from store where store_id = ?";
@@ -612,11 +599,8 @@ public class Rest extends RestBasis {
 		return res;
 	}
 
-	private GenericResponse marketManageAdd(MarketManageRequest req) throws Exception {
+	private GenericResponse marketManageAdd(Connection con, MarketManageRequest req) throws Exception {
 		GenericResponse res = new GenericResponse();
-
-		con = initWS();
-
 		int locationId;
 
 		String sql = "INSERT INTO location (zip, city, street, gps_length, gps_width) VALUES (?, ?, ?, ?, ?) returning location_id";
@@ -625,7 +609,9 @@ public class Rest extends RestBasis {
 		// 'TestStra�e', '123', '456') returning location_id;";
 		// TODO zip nicht in string
 		PreparedStatement pstmt = con.prepareStatement(sql);
-		pstmt.setInt(1, Integer.valueOf(req.getZip()));
+		int zip = 0;
+		if ( !req.getZip().isEmpty() ) zip = Integer.valueOf(req.getZip());
+		pstmt.setInt(1, zip );
 		pstmt.setString(2, req.getCity());
 		pstmt.setString(3, req.getStreet());
 		pstmt.setString(4, req.getGps_length());

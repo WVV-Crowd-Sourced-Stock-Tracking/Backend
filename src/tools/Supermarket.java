@@ -5,6 +5,7 @@ public class Supermarket {
 	private String name;
 	private Location location;
 	private String google_id;
+	private String distance = "";
 	
 	public int getMarket_id() {
 		return market_id;
@@ -29,5 +30,11 @@ public class Supermarket {
 	}
 	public void setGoogle_id(String google_id) {
 		this.google_id = google_id;
+	}
+	public String getDistance() {
+		return distance;
+	}
+	public void setDistance(String distance) {
+		this.distance = distance;
 	}
 }
