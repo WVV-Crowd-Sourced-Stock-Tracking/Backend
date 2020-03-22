@@ -10,34 +10,40 @@ public class ProductItem {
 	@JsonIgnore
 	private Product product;
 	
-	private int product_id = 0;
-	private String product_name = "";
-	private int quantity = 0;
+	private int id = 0;
+	private String name = "";
+	private int availability = 0;
 	
 	public ProductItem(@NotNull Product product) {
 		this.product = product;
-		this.product_id = product.getProductCategory().getId();
-		this.product_name = product.getProductCategory().getName();
-		this.quantity = product.getQuantity();
+		this.id = product.getProductCategory().getId();
+		this.name = product.getProductCategory().getName();
+		this.availability = product.getQuantity();
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getAvailability() {
+		return availability;
+	}
+
+	public void setAvailability(int availability) {
+		this.availability = availability;
 	}
 	
 	
-	public int getProduct_id() {
-		return product_id;
-	}
-	public void setProduct_id(int product_id) {
-		this.product_id = product_id;
-	}
-	public String getProduct_name() {
-		return product_name;
-	}
-	public void setProduct_name(String product_name) {
-		this.product_name = product_name;
-	}
-	public int getQuantity() {
-		return quantity;
-	}
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
 }

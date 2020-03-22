@@ -195,9 +195,9 @@ public class Rest extends RestBasis {
 					for(final JsonNode objNode : actualObj) {
 						Supermarket market = new Supermarket();
 						market.setName(objNode.path("name").asText());
-						market.setOpenNow(objNode.path("open_now").asBoolean());
 						market.setGoogle_id(objNode.path("id").asText());
 						market.setDistance(objNode.path("distance").asText());
+						market.setOpenNow(objNode.path("open_now").asBoolean());
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							Location location = new Location();
@@ -268,7 +268,7 @@ public class Rest extends RestBasis {
 				//Create ProductID-String for sql query
 				PreparedStatement pstmt = null;
 				pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
-				pstmt.setInt(1, currMarket.getMarket_id());
+				pstmt.setInt(1, currMarket.getId());
 				rsProducts = pstmt.executeQuery();
 				
 				//TODO einzele Auslese in singleMarketProduts-Liste packen und anschlieﬂend diese in productsInMarket-Liste
@@ -286,7 +286,7 @@ public class Rest extends RestBasis {
 				}
 				rsProducts.close();
 				pstmt.close();
-				currMarket.setProduct(singleMarketProducts);
+				currMarket.setProducts(singleMarketProducts);
 				productsInMarkets.add(singleMarketProducts);		
 			} 
 			

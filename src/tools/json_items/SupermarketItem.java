@@ -17,31 +17,33 @@ public class SupermarketItem {
 	public SupermarketItem(@NotNull Supermarket supermarket) {
 		this.supermarket = supermarket;
 		
-		market_id = supermarket.getMarket_id();
+		id = supermarket.getMarket_id();
 		name = supermarket.getName();
 		city = supermarket.getLocation().getCity();
 		street = supermarket.getLocation().getStreet();
-		gps_length = supermarket.getLocation().getGpsLength();
-		gps_width = supermarket.getLocation().getGpsWidth();
-		google_id = supermarket.getGoogle_id();
+		lng = supermarket.getLocation().getGpsLength();
+		lat = supermarket.getLocation().getGpsWidth();
+		mapsId = supermarket.getGoogle_id();
 		distance = supermarket.getDistance();
+		open = supermarket.isOpenNow();
 	}
 	
-	private int market_id;
+	private int id;
 	private String name;
 	private String city;
 	private String street;
-	private String gps_length;
-	private String gps_width;
+	private String lng;
+	private String lat;
 	private String distance = "";			//UoM is meter
-	private String google_id = "";
-	private List<ProductItem> product = new ArrayList<ProductItem>();
+	private String mapsId = "";
+	private Boolean open = false;
+	private List<ProductItem> products = new ArrayList<ProductItem>();
 
-	public int getMarket_id() {
-		return market_id;
+	public int getId() {
+		return id;
 	}
-	public void setMarket_id(int market_id) {
-		this.market_id = market_id;
+	public void setId(int id) {
+		this.id = id;
 	}
 	public String getName() {
 		return name;
@@ -61,17 +63,17 @@ public class SupermarketItem {
 	public void setStreet(String street) {
 		this.street = street;
 	}
-	public String getGps_length() {
-		return gps_length;
+	public String getLng() {
+		return lng;
 	}
-	public void setGps_length(String gps_length) {
-		this.gps_length = gps_length;
+	public void setLng(String lng) {
+		this.lng = lng;
 	}
-	public String getGps_width() {
-		return gps_width;
+	public String getLat() {
+		return lat;
 	}
-	public void setGps_width(String gps_width) {
-		this.gps_width = gps_width;
+	public void setLat(String lat) {
+		this.lat = lat;
 	}
 	
 	public String getDistance() {
@@ -81,11 +83,19 @@ public class SupermarketItem {
 		this.distance = distance;
 	}
 	
-	public String getGoogle_id() {
-		return google_id;
+	public String getMapsId() {
+		return mapsId;
 	}
-	public void setGoogle_id(String google_id) {
-		this.google_id = google_id;
+	public void setMapsId(String mapsId) {
+		this.mapsId = mapsId;
+	}
+	
+	
+	public Boolean getOpen() {
+		return open;
+	}
+	public void setOpen(Boolean open) {
+		this.open = open;
 	}
 	/**
 	 * 
@@ -96,22 +106,23 @@ public class SupermarketItem {
 	 * @param gps_length
 	 * @param gps_width
 	 */
-	public SupermarketItem(int market_id, String name, String city, String street, String gps_length, String gps_width, String distance, String google_id) {
+	public SupermarketItem(int id, String name, String city, String street, String lng, String lat, String distance, String mapsId, Boolean open) {
 		super();
-		this.market_id = market_id;
+		this.id = id;
 		this.name = name;
 		this.city = city;
 		this.street = street;
-		this.gps_length = gps_length;
-		this.gps_width = gps_width;
+		this.lng = lng;
+		this.lat = lat;
 		this.distance = distance;
-		this.google_id = google_id;
+		this.mapsId = mapsId;
+		this.open = open;
 	}
-	public List<ProductItem> getProduct() {
-		return product;
+	public List<ProductItem> getProducts() {
+		return products;
 	}
-	public void setProduct(List<ProductItem> product) {
-		this.product = product;
+	public void setProducts(List<ProductItem> products) {
+		this.products = products;
 	}
 
 }
