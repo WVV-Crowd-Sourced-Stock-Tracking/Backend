@@ -6,6 +6,7 @@ public class Supermarket {
 	private Location location;
 	private String google_id;
 	private String distance = "";
+	private boolean openNow;
 	
 	public int getMarket_id() {
 		return market_id;
@@ -37,4 +38,11 @@ public class Supermarket {
 	public void setDistance(String distance) {
 		this.distance = distance;
 	}
+	public boolean isOpenNow() {
+		return openNow;
+	}
+	public void setOpenNow(boolean openNow) {
+		this.openNow = openNow;
+	}
+	
 }

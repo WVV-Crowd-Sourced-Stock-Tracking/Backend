@@ -195,6 +195,7 @@ public class Rest extends RestBasis {
 					for(final JsonNode objNode : actualObj) {
 						Supermarket market = new Supermarket();
 						market.setName(objNode.path("name").asText());
+						market.setOpenNow(objNode.path("open_now").asBoolean());
 						market.setGoogle_id(objNode.path("id").asText());
 						market.setDistance(objNode.path("distance").asText());
 						if(marketIsInDb( con, market)) {
