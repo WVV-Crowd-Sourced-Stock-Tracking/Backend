@@ -1,5 +1,10 @@
 package webService;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +13,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
@@ -20,11 +29,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.json.simple.JSONObject;
-
 import tools.GenericResponse;
 import tools.MarketStockItem;
 import tools.ProductItem;
+import tools.Supermarket;
 import tools.json_items.SupermarketItem;
 
 @Path("/rest")
@@ -149,12 +157,31 @@ public class Rest extends RestBasis {
 			else if (gps_length != null && gps_width != null) {
 				int radius = req.getRadius();
 				//TODO Get Supermarket IDs via API
-
-				JSONObject json = new JSONObject();
 				json.put("zip_code", zipString);
 				json.put("latitude", gps_width);
 				json.put("longitude", gps_length);
 				json.put("radius", radius);
+				
+				String GET_URL = "http://3.120.206.89/markets?zip_code=50933&format=json";
+				String USER_AGENT = "Mozilla/5.0";
+				URL obj = new URL(GET_URL);
+				HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+				conn.setRequestMethod("GET");
+				conn.setRequestProperty("User-Agent", USER_AGENT);
+				int responseCode = conn.getResponseCode();
+				System.out.println("GET Response Code :: " + responseCode);
+				if (responseCode == HttpURLConnection.HTTP_OK) { // success
+					InputStream in = conn.getInputStream();
+					JsonReader jsonReader = Json.createReader(in);
+					JsonArray jsonArray = jsonReader.readArray();
+					
+					for(int i=0; i<jsonArray.size(); i++) {
+						Supermarket market = new Supermarket();
+						
+					}
+
+				}
+				
 				
 				//TODO get supermarket Data from DB matching the IDs
 				
