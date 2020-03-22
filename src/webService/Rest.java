@@ -30,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import tools.GenericResponse;
+import tools.Location;
 import tools.MarketStockItem;
 import tools.ProductItem;
 import tools.Supermarket;
@@ -176,10 +177,33 @@ public class Rest extends RestBasis {
 					JsonArray jsonArray = jsonReader.readArray();
 					
 					for(int i=0; i<jsonArray.size(); i++) {
+						JsonObject jsonObj = jsonArray.getJsonObject(i);
 						Supermarket market = new Supermarket();
+						market.setName(jsonObj.getString("name"));
+						market.setGoogle_id(jsonObj.getString("id"));
+						if(marketIsInDb(market)) {
+							// load market from db
+							
+						} else {
+							// add market to db
+							MarketManageRequest mmr = new MarketManageRequest();
+							Location location = new Location();
+							location.setStreet(jsonObj.getString("vicinity"));
+							location.setGpsLength(jsonObj.getString("longitude"));
+							location.setGpsWidth(jsonObj.getString("latitude"));
+							
+							market.setLocation(location);
+							
+							mmr.setOperation("create");
+							mmr.setName(market.getName());
+							mmr.setGps_length(location.getGpsLength());
+							mmr.setGps_width(location.getGpsWidth());
+							mmr.setGoogle_id(market.getGoogle_id());
+						}
+						
+						marketList.add(new SupermarketItem(market));
 						
 					}
-
 				}
 				
 				
@@ -238,6 +262,41 @@ public class Rest extends RestBasis {
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;
+	}
+	
+	private boolean marketIsInDb(Supermarket market) {
+		Response response = null;
+		Connection con = null;
+		try {
+			con = initWS();
+			String sql = "";
+			PreparedStatement pstmt = null;
+				sql = "select store.store_id from store"
+					+ "where store.google_id = ?";
+				pstmt = con.prepareStatement( sql );
+				pstmt.setString(1, market.getGoogle_id());
+				
+				ResultSet rs = pstmt.executeQuery();
+				int count = 0;
+				while(rs.next()) {
+					int storeId = rs.getInt("store_id");
+					count++;
+				}
+				market.setMarket_id(rs.getInt("store_id"));
+				
+				rs.close();
+				pstmt.close();
+				
+				return count == 1;
+		}
+		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 
 	@HEAD
@@ -514,9 +573,10 @@ public class Rest extends RestBasis {
 		rs.close();
 		pstmt.close();
 
-		sql = "INSERT INTO public.store (name, location_id) VALUES (?, " + locationId + ") returning store_id";
+		sql = "INSERT INTO public.store (name, location_id, google_id) VALUES (?, " + locationId + ", ?) returning store_id";
 		pstmt = con.prepareStatement(sql);
 		pstmt.setString(1, req.getName());
+		pstmt.setString(2, req.getGoogle_id());
 		// pstmt.setString(2, String.valueOf(locationId));
 
 		rs = pstmt.executeQuery();

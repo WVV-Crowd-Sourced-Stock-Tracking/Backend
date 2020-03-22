@@ -23,6 +23,7 @@ public class SupermarketItem {
 		street = supermarket.getLocation().getStreet();
 		gps_length = supermarket.getLocation().getGpsLength();
 		gps_width = supermarket.getLocation().getGpsWidth();
+		google_id = supermarket.getGoogle_id();
 		
 	}
 	

@@ -9,6 +9,8 @@ public class MarketManageRequest {
 	private String zip = "";
 	private String gps_length = "";
 	private String gps_width = "";
+	private String google_id = "";
+	
 	public String getOperation() {
 		return operation;
 	}
@@ -57,4 +59,11 @@ public class MarketManageRequest {
 	public void setGps_width(String gps_width) {
 		this.gps_width = gps_width;
 	}
+	public String getGoogle_id() {
+		return google_id;
+	}
+	public void setGoogle_id(String google_id) {
+		this.google_id = google_id;
+	}
+	
 }
