@@ -149,7 +149,7 @@ public class Rest extends RestBasis {
 			ResultSet rsProducts = null;
 			List<SupermarketItem> marketList = new ArrayList<SupermarketItem>();
 			
-			if (zipString != null && (gps_length == null || gps_width == null)) {
+			if (zipString.length() > 0 && (gps_length.length() == 0 || gps_width.length() == 0)) {
 				//TODO SQL Alle mit gleicher Zip
 				int zip = Integer.parseInt(zipString);
 				
@@ -157,8 +157,26 @@ public class Rest extends RestBasis {
 				pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where location.zip=?");
 				pstmt.setInt(1, zip);
 				rsMarkets = pstmt.executeQuery();
-				pstmt.close();
 				
+				
+				while( rsMarkets.next() ) {
+					
+					Supermarket market = new Supermarket();
+					Location location = new Location();
+					
+					market.setGoogle_id(rsMarkets.getString("google_id"));
+					market.setMarket_id(rsMarkets.getInt("store_id"));
+					market.setName(rsMarkets.getString("name"));
+					location.setCity(rsMarkets.getString("city"));
+					location.setGpsLength(rsMarkets.getString("gps_length"));
+					location.setGpsWidth(rsMarkets.getString("gps_width"));
+					location.setStreet(rsMarkets.getString("street"));
+					location.setZip(rsMarkets.getInt("zip"));
+					market.setLocation(location);
+					marketList.add(new SupermarketItem(market));					
+				}
+				res.setSupermarket(marketList);
+				pstmt.close();
 			}
 			else if (gps_length != null && gps_width != null) {
 				int radius = req.getRadius();
@@ -213,11 +231,11 @@ public class Rest extends RestBasis {
 							ResultSet rs = pstmt2.executeQuery();
 							rs.next();
 							Location location = new Location();
-								location.setZip(rs.getInt(1));
-								location.setCity(rs.getString(2));
-								location.setStreet(rs.getString(3));
-								location.setGpsLength(rs.getString(4));
-								location.setGpsWidth(rs.getString(5));
+							location.setZip(rs.getInt(1));
+							location.setCity(rs.getString(2));
+							location.setStreet(rs.getString(3));
+							location.setGpsLength(rs.getString(4));
+							location.setGpsWidth(rs.getString(5));
 							
 							
 							if (!(location.getZip()>500)) {
