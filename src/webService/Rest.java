@@ -364,15 +364,7 @@ public class Rest extends RestBasis {
 					
 					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschlieﬂend diese in productsInMarket-Liste
 					while( rsProducts.next() ) {
-						tools.ProductCategory productCategory = new tools.ProductCategory();
-						productCategory.setId(rsProducts.getInt(1));
-						productCategory.setName(rsProducts.getString(2));
-						
-						tools.Product singleProduct = new tools.Product(productCategory);
-						singleProduct.setQuantity(rsProducts.getInt(3));
-						
-						tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
-						
+						tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
 						singleMarketProducts.add(jsonProductItem);
 					}
 					rsProducts.close();
@@ -494,7 +486,7 @@ public class Rest extends RestBasis {
 	@Path("/market/details")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response marketScrape(@Context HttpServletRequest request, MarketDetailsRequest req) {
+	public Response marketDetails(@Context HttpServletRequest request, MarketDetailsRequest req) {
 		Response response = null;
 		Connection con = null;
 		MarketDetailsResponse res = new MarketDetailsResponse();
@@ -509,8 +501,7 @@ public class Rest extends RestBasis {
 			ResultSet rsMarkets = null;
 			ResultSet rsProducts = null;
 			
-			PreparedStatement pstmt = null;
-			pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where (store.store_id=? or google_id = ?)");
+			PreparedStatement pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where (store.store_id=? or google_id = ?)");
 			pstmt.setInt(1, id);
 			pstmt.setString(2, googleId);
 			rsMarkets = pstmt.executeQuery();
@@ -536,31 +527,17 @@ public class Rest extends RestBasis {
 			
 			supermarketItem = new SupermarketItem(supermarket);
 			
-			List<tools.json_items.ProductItem> productsInStore = new ArrayList<>();
-
 			//Create ProductID-String for sql query
-			pstmt = null;
 			pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? order by s.quantity desc");
 			pstmt.setInt(1, supermarket.getMarket_id());
 			rsProducts = pstmt.executeQuery();
 				
 			while( rsProducts.next() ) {
-				tools.ProductCategory productCategory = new tools.ProductCategory();
-				productCategory.setId(rsProducts.getInt(1));
-					productCategory.setName(rsProducts.getString(2));
-					
-					tools.Product singleProduct = new tools.Product(productCategory);
-					singleProduct.setQuantity(rsProducts.getInt(3));
-					
-					tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(singleProduct);
-					
-					productsInStore.add(jsonProductItem);
-				}
-				rsProducts.close();
-				pstmt.close();
-				
-				supermarketItem.setProducts(productsInStore);
-			
+				tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
+				supermarketItem.getProducts().add(jsonProductItem);
+			}
+			rsProducts.close();
+			pstmt.close();
 			res.setSupermarket(supermarketItem);
 			res.setResult("success");
 		}

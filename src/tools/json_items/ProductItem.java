@@ -1,24 +1,21 @@
 package tools.json_items;
 
-import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import tools.Product;
-
 public class ProductItem {
-	@JsonIgnore
-	private Product product;
-	
 	private int id = 0;
 	private String name = "";
 	private int availability = 0;
 	
-	public ProductItem(@NotNull Product product) {
-		this.product = product;
-		this.id = product.getProductCategory().getId();
-		this.name = product.getProductCategory().getName();
-		this.availability = product.getQuantity();
+	/**
+	 * 
+	 * @param id
+	 * @param name
+	 * @param availability
+	 */
+	public ProductItem(int id, String name, int availability) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.availability = availability;
 	}
 
 	public int getId() {
