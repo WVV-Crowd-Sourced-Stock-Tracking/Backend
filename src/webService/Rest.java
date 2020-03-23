@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import tools.GenericResponse;
 import tools.Location;
 import tools.MarketStockItem;
+import tools.MarketTransmitItem;
 import tools.ProductItem;
 import tools.Supermarket;
 import tools.json_items.SupermarketItem;
@@ -48,12 +47,23 @@ public class Rest extends RestBasis {
 
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/transmit
-	 *  JSON input 
+	 *  JSON input 1
 	 	{ 
 			"market_id": 1,
 			"product_id": 1,
 			"quantity": 100
 		}
+	 *  JSON input 2
+		{
+		      "bulk":[{"market_id": 18,
+		          "product_id": 1,
+		           "quantity": 50
+		      },
+		      {"market_id": 18,
+		          "product_id": 32,
+		           "quantity": 100
+		      }]
+		}		
 	 *  JSON output
 	   	{
    			"result": "success"
@@ -67,25 +77,15 @@ public class Rest extends RestBasis {
 		Response response = null;
 		Connection con = null;
 		GenericResponse res = new GenericResponse();
-		int ret = 0;
 		try {
 			con = initWS();
-
-			PreparedStatement pstmt = null;
-			pstmt = con.prepareStatement("update stock set quantity=? where store_id=? and product_id=?");
-			pstmt.setInt(1, req.getQuantity());
-			pstmt.setInt(2, req.getMarket_id());
-			pstmt.setInt(3, req.getProduct_id());
-			ret = pstmt.executeUpdate();
-			pstmt.close();
-
-			if (ret == 0) {
-				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)");
-				pstmt.setInt(1, req.getMarket_id());
-				pstmt.setInt(2, req.getProduct_id());
-				pstmt.setInt(3, req.getQuantity());
-				ret = pstmt.executeUpdate();
-				pstmt.close();
+			if ( req.getMarket_id() > 0 && req.getProduct_id() > 0) {
+				saveTransmit( con, req.getMarket_id(), req.getProduct_id(), req.getQuantity() );
+			}
+			if ( req.getBulk().size() > 0 ) {
+				for( MarketTransmitItem i : req.getBulk() ) {
+					saveTransmit( con, i.getMarket_id(), i.getProduct_id(), i.getQuantity() );
+				}
 			}
 			con.commit();
 			res.setResult("success");
@@ -100,6 +100,39 @@ public class Rest extends RestBasis {
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;
+	}
+	
+	private void saveTransmit( Connection con, int market_id, int product_id, int quantity) {
+		int ret = 0;
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = con.prepareStatement("update stock set quantity=? where store_id=? and product_id=?");
+			pstmt.setInt(1, quantity);
+			pstmt.setInt(2, market_id);
+			pstmt.setInt(3, product_id);
+			ret = pstmt.executeUpdate();
+			pstmt.close();
+
+			if (ret == 0) {
+				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)");
+				pstmt.setInt(1, market_id);
+				pstmt.setInt(2, product_id);
+				pstmt.setInt(3, quantity);
+				ret = pstmt.executeUpdate();
+				pstmt.close();
+			}
+		} catch (SQLException ex) {
+			if ( pstmt != null ) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+				}
+			}
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
+		}
 	}
 
 	@HEAD

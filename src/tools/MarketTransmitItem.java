@@ -1,15 +1,9 @@
-package webService;
+package tools;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import tools.MarketTransmitItem;
-
-public class MarketTransmitRequest {
+public class MarketTransmitItem {
 	private int market_id = 0;
 	private int product_id = 0;
 	private int quantity = 0;
-	private List<MarketTransmitItem> bulk = new ArrayList<MarketTransmitItem>();
 	public int getMarket_id() {
 		return market_id;
 	}
@@ -27,11 +21,5 @@ public class MarketTransmitRequest {
 	}
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
-	}
-	public List<MarketTransmitItem> getBulk() {
-		return bulk;
-	}
-	public void setBulk(List<MarketTransmitItem> bulk) {
-		this.bulk = bulk;
 	}
 }
