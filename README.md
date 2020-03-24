@@ -35,8 +35,6 @@
 `POST /market/transmit`
 **[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/transmit](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/transmit)**
 
-**Info:** Das Überreichen einer Liste von Produkten ist zur Zeit noch nicht implementiert.
-
 **Anfrage:**  2 Möglichkeiten
 1. JSON mit `market_id`, `product_id`, `quantity` (0 (wenig) - 100 (viel))
 2. JSON mit  JSON `bulk` mit attr `market_id`, `product_id`, `quantity`
