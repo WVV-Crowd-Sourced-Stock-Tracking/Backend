@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.GatheringByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -40,6 +41,8 @@ import tools.MarketTransmitItem;
 import tools.ProductItem;
 import tools.Supermarket;
 import tools.json_items.SupermarketItem;
+
+import google_api.mapsApi;
 
 @Path("/rest")
 public class Rest extends RestBasis {
@@ -215,37 +218,9 @@ public class Rest extends RestBasis {
 				int radius = req.getRadius();
 				// Get Supermarket IDs via API			
 				
-				String get_url = "http://3.120.206.89/markets?latitude=" + gps_width + "&longitude=" + gps_length + "&radius=" + radius;
-				String USER_AGENT = "Mozilla/5.0";
-				URL obj = new URL(get_url);
-				HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
-				conn.setRequestMethod("GET");
-				conn.setRequestProperty("User-Agent", USER_AGENT);
-				int responseCode = conn.getResponseCode();
-				System.out.println("GET Response Code :: " + responseCode);
-				if (responseCode == HttpURLConnection.HTTP_OK) { // success
-					InputStream in = conn.getInputStream();
-					
-				    StringBuilder textBuilder = new StringBuilder();
-				    try (Reader reader = new BufferedReader(new InputStreamReader
-				      (in, Charset.forName(StandardCharsets.UTF_8.name())))) {
-				        int c = 0;
-				        while ((c = reader.read()) != -1) {
-				            textBuilder.append((char) c);
-				        }
-				    }
-				    
-					ObjectMapper mapper = new ObjectMapper();
-				    JsonNode actualObj = mapper.readTree(textBuilder.toString());
-				    if (actualObj.isArray()) {
-				        for (final JsonNode objNode : actualObj) {
-				            System.out.println(objNode);
-				            JsonNode n = objNode.path("name");
-				            String a = n.asText();
-				            System.out.println(a);
-				        }
-				    }
-	    
+				JsonNode actualObj = google_api.mapsApi.scrapeAreaForMarkets(gps_length, gps_width, radius);
+				 
+				if (actualObj != null) {
 					for(final JsonNode objNode : actualObj) {
 						Supermarket market = new Supermarket();
 						market.setName(objNode.path("name").asText());
@@ -318,8 +293,7 @@ public class Rest extends RestBasis {
 						
 						marketList.add(new SupermarketItem(market));						
 					}
-				}
-				
+				}				
 				res.setSupermarket(marketList);
 			}
 			
@@ -394,36 +368,14 @@ public class Rest extends RestBasis {
 	//TODO Google API fuer zip und AdressInfos
 	private Location apiGetLocation(String google_id, Location location) throws IOException {
 
-		String get_url = "http://3.120.206.89/market?place_id=" + google_id;
-		String USER_AGENT = "Mozilla/5.0";
-		URL obj = new URL(get_url);
-		HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
-		conn.setRequestMethod("GET");
-		conn.setRequestProperty("User-Agent", USER_AGENT);
-		int responseCode = conn.getResponseCode();
-		System.out.println("GET Response Code :: " + responseCode);
-		if (responseCode == HttpURLConnection.HTTP_OK) { // success
-			InputStream in = conn.getInputStream();
-			
-		    StringBuilder textBuilder = new StringBuilder();
-		    try (Reader reader = new BufferedReader(new InputStreamReader
-		      (in, Charset.forName(StandardCharsets.UTF_8.name())))) {
-		        int c = 0;
-		        while ((c = reader.read()) != -1) {
-		            textBuilder.append((char) c);
-		        }
-		    }
-		    
-			ObjectMapper mapper = new ObjectMapper();
-		    JsonNode objNode = mapper.readTree(textBuilder.toString());
-		    String street = objNode.path("route").asText() + " " + objNode.findPath("street_number").asText();
+		JsonNode objNode = google_api.mapsApi.getPlaceDetails(google_id);
+		if (objNode != null) {
+			String street = objNode.path("route").asText() + " " + objNode.findPath("street_number").asText();
 			location.setStreet(street);
 			location.setCity(objNode.findPath("locality").asText());
 			location.setZip(objNode.findPath("postal_code").asInt());
-					    
-		}
-		return location;
-		    
+		}				   
+		return location;   
 	}
 	
 	
