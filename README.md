@@ -51,15 +51,15 @@ Json Input 1
 } 
 ```
 Json Input 2
-```json
+```yaml
 {
-	“bulk”: [{
-		"market_id": 1,
-		"product_id": 1,
-		"quantity": 100
-		}, 
-		{...Another Product...}
-	]
+   “bulk”: [{
+      "market_id": 1,
+      "product_id": 1,
+      "quantity": 100
+      }, 
+      {...Another Product...}
+      ]
 }
 ```
 
@@ -93,13 +93,13 @@ JSON Liste `supermarkt` mit Elementen bestehend aus `market_id`, `name`, `city`,
 
 **Beispiel:**
 Json Input
-```json
+```yaml
 {
- "zip": Number (Beispiel: 12345),
- "gps_length": String (Beispiel: 8.878),
- "gps_width": String (Beispel: 45.34),
- "radius": Number (Beispiel: 100),
- "product_id": 
+"zip": Number (Beispiel: 12345),
+"gps_length": String (Beispiel: 8.878),
+"gps_width": String (Beispel: 45.34),
+"radius": Number (Beispiel: 100),
+"product_id": 
 	 {
 	 1, 2
 	 }
@@ -107,7 +107,7 @@ Json Input
 ```
 
 Json Output
- ```json
+ ```yaml
 [ {
 	"id": Number (Beispiel: 2),
 	"mapsId": String (Beispiel: "rx59ghdk"),
@@ -124,12 +124,12 @@ Json Output
 		"id": Number (Beispiel: 1),
 		"name": String (Beispiel: "Milch"),
 		"availability": Number (Beispiel: 43)
-		},
-		{
+	     },
+	     {
 		"id": Number (Beispiel: 2),
 		"name": String (Beispiel: "Eis"),
 		"availability": Number (Beispiel: 74)
-		}
+	     }
 	},
 	{...weiterer Supermarkt und Bestandsinformationen...}
 ]
@@ -201,8 +201,8 @@ Json Output
 			"id": 26,
 			"name": "Fisch",
 			"availability": 100
-		},
-		{
+			},
+			{
 			"id": 162,
 			"name": "Nudeln",
 			"availability": 65
