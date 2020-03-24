@@ -7,13 +7,21 @@
   
 [Übermitteln des Bestands an einem Supermarkt](#übermitteln-neuer-bestandsinformationen-an-einen-supermarkt---deployed)
 [Supermärkte nach Standort (und Produkt) abfragen](#supermärkte-nach-standort-und-produkt-abfragen)
+
 [Abfrage aller Produktkategorien](#abfrage-aller-produktkategorien)
+
 [Market Details abfragen](#market-details-abfragen)
+
 [Supermarkt Information Abfrage - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.lc4whgo30cgm)
+
 [Bestandsabfrage(google id wird noch hinzugefügt)  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.bgsyhocc8v4x)
+
 [Supermarkt anlegen, ändern, löschen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.txfaibqq7yn2)
+
 [Produktkategorie anlegen, ändern, löschen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.i8no2bq3i5q6)
+
 [EAN anlegen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.fiw7wvq81pfa)
+
 [EAN abfrage  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.zccauwllf4zp)
 
 
