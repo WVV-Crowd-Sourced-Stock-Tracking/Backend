@@ -156,10 +156,9 @@ Json Output
  ```json
 {
 	"result": "success",
-	"product": [ {
-		"product_id": 1,
-		"product_name": "Milch",
-		}
+	"product": [ 
+		{"product_id": 1, "product_name": "Milch"},
+		{"product_id": 3, "product_name": "Kartoffeln"}
 		]
 }
 ```
