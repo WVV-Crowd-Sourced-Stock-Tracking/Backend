@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -105,25 +106,63 @@ public class Rest extends RestBasis {
 		return response;
 	}
 	
+	private static final int MAX_HISTORY = 5;			//Max # of records in stock_history for one stock/product
 	private void saveTransmit( Connection con, int market_id, int product_id, int quantity) {
 		int ret = 0;
+		int anz = 0;
+		int sum = 0;
+		Timestamp minTs = null;
+		
 		PreparedStatement pstmt = null;
 		try {
-			pstmt = con.prepareStatement("update stock set quantity=? where store_id=? and product_id=?");
-			pstmt.setInt(1, quantity);
-			pstmt.setInt(2, market_id);
-			pstmt.setInt(3, product_id);
-			ret = pstmt.executeUpdate();
-			pstmt.close();
-
-			if (ret == 0) {
-				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)");
+			String sql = "select ts,quantity from stock_history where store_id=? and product_id=? order by ts desc";
+			pstmt = con.prepareStatement( sql );
+			pstmt.setInt(1, market_id);
+			pstmt.setInt(2, product_id);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while( rs.next() && anz < MAX_HISTORY) {
+				minTs = rs.getTimestamp(1);
+				if ( ++anz < MAX_HISTORY ) {			//Only n-1 and act. quantity into sum 
+					sum += rs.getInt(2);
+				}
+			}
+			rs.close();
+			pstmt.close();	
+			if ( anz == MAX_HISTORY ) {
+				pstmt = con.prepareStatement("delete from stock_history where store_id=? and product_id=? " +
+											 "and ts <= ?");
 				pstmt.setInt(1, market_id);
 				pstmt.setInt(2, product_id);
-				pstmt.setInt(3, quantity);
+				pstmt.setTimestamp(3, minTs);
 				ret = pstmt.executeUpdate();
 				pstmt.close();
 			}
+			else {								//We are not at the max # of records 
+				anz++;
+			}
+			sum += quantity;
+			
+			pstmt = con.prepareStatement("insert into stock_history(store_id,product_id,quantity) values(?,?,?) " +
+										 "on conflict(store_id,product_id,ts) do update set quantity = ?");
+			pstmt.setInt(1, market_id);
+			pstmt.setInt(2, product_id);
+			pstmt.setInt(3, quantity);
+			pstmt.setInt(4, quantity);
+			ret = pstmt.executeUpdate();
+			pstmt.close();
+			
+			quantity = sum/anz;
+			
+			pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)" +
+					 					 "on conflict(store_id,product_id) do update set quantity = ?");
+			pstmt.setInt(1, market_id);
+			pstmt.setInt(2, product_id);
+			pstmt.setInt(3, quantity);
+			pstmt.setInt(4, quantity);
+			ret = pstmt.executeUpdate();
+			pstmt.close();
+
 		} catch (SQLException ex) {
 			if ( pstmt != null ) {
 				try {
