@@ -1,15 +1,6 @@
 package webService;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.channels.GatheringByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -33,7 +25,6 @@ import javax.ws.rs.core.Response;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tools.GenericResponse;
 import tools.Location;
@@ -42,8 +33,6 @@ import tools.MarketTransmitItem;
 import tools.ProductItem;
 import tools.Supermarket;
 import tools.json_items.SupermarketItem;
-
-import google_api.mapsApi;
 
 @Path("/rest")
 public class Rest extends RestBasis {
@@ -269,21 +258,22 @@ public class Rest extends RestBasis {
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							
-							String sql = "";
-							PreparedStatement pstmt2 = null;
-							sql = "select l.zip, l.city, l.street, l.gps_length, l.gps_width from store s, location l "
+							String sql = "select l.zip, l.city, l.street, l.gps_length, l.gps_width from store s, location l "
 									+ "where s.store_id = ? and l.location_id=s.location_id";
+							PreparedStatement pstmt2 = null;
 							pstmt2 = con.prepareStatement( sql );
 							pstmt2.setInt(1, market.getMarket_id());
 							ResultSet rs = pstmt2.executeQuery();
-							rs.next();
 							Location location = new Location();
-							location.setZip(rs.getInt(1));
-							location.setCity(rs.getString(2));
-							location.setStreet(rs.getString(3));
-							location.setGpsLength(rs.getString(4));
-							location.setGpsWidth(rs.getString(5));
-							
+							if ( rs.next() ) {
+								location.setZip(rs.getInt(1));
+								location.setCity(rs.getString(2));
+								location.setStreet(rs.getString(3));
+								location.setGpsLength(rs.getString(4));
+								location.setGpsWidth(rs.getString(5));
+							}
+							rs.close();
+							pstmt2.close();
 							
 							if (!(location.getZip()>500)) {
 								//get zip and address-info from API
@@ -1135,8 +1125,8 @@ public class Rest extends RestBasis {
 	@Path("product_ean/scrape")
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	                           .header("someHeader", "someHeaderValue")
-	                           .build();
+	  							.header("Access-Control-Allow-Origin", "*")
+	  							.build();
 	      return response;
 	}
 
@@ -1152,6 +1142,72 @@ public class Rest extends RestBasis {
 	      return response;
 	}
 	
+	
+	@POST
+	@Path("/market/customers")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response marketCustomers(@Context HttpServletRequest request, MarketCustomersRequest req) {
+		Response response = null;
+		Connection con = null;
+		GenericResponse res = new GenericResponse();
+		try {
+			con = initWS();
+//TODO
+/*			
+			String sql = "select e.product_id,p.name from ean_is_kind_of e, product p " +
+						 "where e.ean=? and e.product_id=p.product_id";
+			PreparedStatement pstmt = con.prepareStatement( sql );
+			pstmt.setLong(1, Long.valueOf(req.getEan()));
+			ResultSet rs = pstmt.executeQuery();
+			if( rs.next() ) {
+				res.setProduct_id( rs.getInt(1));
+				res.setName(rs.getString(2));
+				res.setResult("success");
+			}
+			else {
+				res.setResult("not found");
+			}
+			rs.close();
+			pstmt.close();
+*/					
+		}
+		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+		}
+		return response;
+	}
+
+	@HEAD
+	@Path("/market/customers")
+	public Response marketCustomersHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  							.header("Access-Control-Allow-Origin", "*")
+	  							.build();
+	      return response;
+	}
+
+	@OPTIONS
+	@Path("/market/customers")
+	public Response marketCustomersOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
+	
+	
 	/**
 	 * URL http://127.0.0.1:8080/Backend/ws/rest/hello JSON input {"zahl":1} JSON
 	 * output {"text": "HelloWorld 1"}
@@ -1166,16 +1222,9 @@ public class Rest extends RestBasis {
 		HelloResponse res = new HelloResponse();
 		try {
 			con = initWS();
-			String sql = "select location_id from location";
-			PreparedStatement pstmt = con.prepareStatement(sql);
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next()) {
-				String data = rs.getString(1);
-				System.out.println(data);
-			}
-			rs.close();
-			pstmt.close();		
-			
+//TODO just for testing			
+			findMarkets( con, 50.363509, 8.751548, 500 );
+
 			res.setText( "HelloWorld " + req.getZahl());
 		}
 		catch ( Exception ex) {
@@ -1195,19 +1244,128 @@ public class Rest extends RestBasis {
 	@HEAD
 	@Path("/hello")
 	public Response helloHead(@QueryParam("param1") String param1) {
-		Response response = Response.ok("this body will be ignored").header("someHeader", "someHeaderValue").build();
+		Response response = Response.ok("this body will be ignored")
+  								.header("Access-Control-Allow-Origin", "*")
+  								.build();
 		return response;
 	}
 
+	@OPTIONS
+	@Path("/hello")
+	public Response helloOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
+	
 
-
-	private void finallyWs(Connection con) {
+	/**
+	 * Get all markets inside a square around the GPS location
+	 * https://de.wikipedia.org/wiki/Wegpunkt-Projektion
+	 * @param lat	in °
+	 * @param lng	in °
+	 * @param radius in meter
+	 * For better DB performance
+	 * CREATE INDEX IDX_GPS_LENGTH ON location(gps_length)
+	 * CREATE INDEX IDX_GPS_WIDTH ON location(gps_width)
+	 */
+	private List<SupermarketItem> findMarkets( Connection con, double lat, double lng, long radius) {
+		List<SupermarketItem> list = new ArrayList<SupermarketItem>();
+		GpsPoint center = new GpsPoint(lat,lng);
+		GpsPoint corners[] = new GpsPoint[2];
+		corners[0] = bearing( center, radius, 315);			//Upper left
+		corners[1] = bearing( center, radius, 135);			//Lower right
+		
+		String sql = "select l.zip, l.city, l.street, l.gps_length, l.gps_width, " +
+					 "s.store_id,s.name,s.google_id " +
+					 "from store s, location l " +
+					 "where l.location_id=s.location_id and " +
+					 "? <= gps_width and gps_width <= ? and " +
+					 "? <= gps_length and gps_length <= ?";
+		PreparedStatement pstmt = null;
 		try {
-			if (con != null) {
-				con.close();
-				con = null;
+			pstmt = con.prepareStatement( sql );
+			pstmt.setString(1,(String.format(Locale.US, "%f", corners[1].lat)));
+			pstmt.setString(2,(String.format(Locale.US, "%f", corners[0].lat)));
+			pstmt.setString(3,(String.format(Locale.US, "%f", corners[0].lng)));
+			pstmt.setString(4,(String.format(Locale.US, "%f", corners[1].lng)));
+
+			ResultSet rs = pstmt.executeQuery();
+			while ( rs.next() ) {
+				System.out.println(rs.getString(4));
+				System.out.println(rs.getString(5));
+
+				SupermarketItem item = new SupermarketItem();
+	//TODO			item.setZip(rs.getInt(1));
+				item.setCity(rs.getString(2));
+				item.setStreet(rs.getString(3));
+				item.setLng(rs.getString(4));
+				item.setLat(rs.getString(5));
+				item.setId( rs.getInt(6));
+				item.setName(rs.getString(7));
+				item.setMapsId(rs.getString(8));
+				int distance = distance(lat, lng, Double.valueOf(item.getLat()), Double.valueOf(item.getLng()) );
+				item.setDistance(String.format("%d", distance));
+				list.add(item);
 			}
-		} catch (SQLException e) {
+			rs.close();
+			pstmt.close();
 		}
-	}	
+		catch( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
+		}
+		return list;
+	}
+	
+	private class GpsPoint {
+		public double lat = 0.0;
+		public double lng = 0.0;
+		GpsPoint() {
+		}
+		GpsPoint( double lat, double lng ) {
+			this.lat = lat;
+			this.lng = lng;
+		}
+	}
+
+	/**
+	 * Calculate the GPS coordinate from point p in direction of angle and distance
+	 * @param p
+	 * @param distance in meter
+	 * @param angle in ° (0=north, 90=east, ...)
+	 * @return
+	 */
+	private GpsPoint bearing( GpsPoint p, long distance, int angle) {
+		GpsPoint r = new GpsPoint();
+		try {
+			double dlat = ((double)distance)/1853.0*Math.cos(angle*Math.PI/180);
+			double dlng =dlat*Math.tan(((double)angle)*Math.PI/180)/Math.cos(p.lng*Math.PI/180+dlat);
+			r.lat = p.lat+dlat*Math.PI/180;
+			r.lng = p.lng+dlng*Math.PI/180;
+		}
+		catch( Exception ex ) {
+			
+		}
+		return r;
+	}
+	
+	/**
+	 * Get the distance between 2 GPS coordinates 
+	 * @param lat1
+	 * @param lng1
+	 * @param lat2
+	 * @param lng2
+	 * @return	distance in meter
+	 */
+	private int distance( double lat1, double lng1, double lat2, double lng2 ) {
+		double dist = 6378388.0 * Math.acos(Math.sin(lat1*Math.PI/180) * Math.sin(lat2*Math.PI/180) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.cos(lng2*Math.PI/180 - lng1*Math.PI/180));
+		return (int) dist;
+	}
 }

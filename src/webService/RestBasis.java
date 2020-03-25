@@ -69,4 +69,15 @@ public class RestBasis extends HttpServlet{
 		return con;
 	}
 	
+	protected void finallyWs(Connection con) {
+		try {
+			if (con != null) {
+				con.close();
+				con = null;
+			}
+		} catch (SQLException e) {
+		}
+	}	
+
+	
 }

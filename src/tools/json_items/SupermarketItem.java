@@ -27,6 +27,8 @@ public class SupermarketItem {
 		distance = supermarket.getDistance();
 		open = supermarket.isOpenNow();
 	}
+	public SupermarketItem() {
+	}
 	
 	private int id;
 	private String name;
