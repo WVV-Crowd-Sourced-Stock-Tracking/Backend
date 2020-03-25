@@ -36,4 +36,4 @@
               removeAbandonedTimeout="300"           
               defaultAutoCommit="false"/>
 -->              
-</Context>
+	<Resource name="jdbc/wvv2" global="jdbc/wvv" factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" auth="Container" type="javax.sql.DataSource" username="web157_2" password="YocyTB8JkOLZnSMw" driverClassName="com.mysql.jdbc.Driver" description="MySQL database" url="jdbc:mysql://s217.goserver.host:3306/web157_db2" ssl="true" maxActive="5" maxIdle="1" maxWaitMillis="10000" removeAbandonedTimeout="300" defaultAutoCommit="false"></Resource></Context>
