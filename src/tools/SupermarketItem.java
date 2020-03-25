@@ -18,6 +18,7 @@ public class SupermarketItem {
 	private String distance = "";			//UoM is meter
 	private String maps_id = "";
 	private Boolean open = false;
+	private String icon_url = "";
 	private List<ProductAvailabilityItem> products = new ArrayList<ProductAvailabilityItem>();
 
 	public int getMarket_id() {
@@ -84,6 +85,12 @@ public class SupermarketItem {
 	}
 	public void setZip(int zip) {
 		this.zip = zip;
+	}
+	public String getIcon_url() {
+		return icon_url;
+	}
+	public void setIcon_url(String icon_url) {
+		this.icon_url = icon_url;
 	}
 	/**
 	 * 

@@ -10,6 +10,7 @@ public class MarketManageRequest {
 	private String longitude = "";
 	private String latitude = "";
 	private String maps_id = "";
+	private String icon_url = "";
 	
 	public String getOperation() {
 		return operation;
@@ -64,5 +65,11 @@ public class MarketManageRequest {
 	}
 	public void setMaps_id(String maps_id) {
 		this.maps_id = maps_id;
+	}
+	public String getIcon_url() {
+		return icon_url;
+	}
+	public void setIcon_url(String icon_url) {
+		this.icon_url = icon_url;
 	}
 }

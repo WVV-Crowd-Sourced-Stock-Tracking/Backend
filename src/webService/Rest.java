@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import tools.SupermarketItem;
 @Path("/rest")
 public class Rest extends RestBasis {
 	private static final long serialVersionUID = 2L;
+	private static final boolean MYSQL = true;
 
 	/**
 	 * 	URL http://127.0.0.1:8080//Backend/ws/rest/market/transmit
@@ -129,9 +131,15 @@ public class Rest extends RestBasis {
 				anz++;
 			}
 			sum += quantity;
-			
-			pstmt = con.prepareStatement("insert into stock_history(store_id,product_id,quantity) values(?,?,?) " +
-										 "on conflict(store_id,product_id,ts) do update set quantity = ?");
+
+			if ( MYSQL ) {
+				pstmt = con.prepareStatement("insert into stock_history(store_id,product_id,quantity) values(?,?,?) " +
+						 "on duplicate key update quantity = ?");
+			}
+			else {
+				pstmt = con.prepareStatement("insert into stock_history(store_id,product_id,quantity) values(?,?,?) " +
+											 "on conflict(store_id,product_id,ts) do update set quantity = ?");
+			}
 			pstmt.setInt(1, market_id);
 			pstmt.setInt(2, product_id);
 			pstmt.setInt(3, quantity);
@@ -141,8 +149,14 @@ public class Rest extends RestBasis {
 			
 			quantity = sum/anz;
 			
-			pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)" +
+			if ( MYSQL ) {
+				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)" +
+	 					 "on duplicate key update quantity = ?");
+			}
+			else {
+				pstmt = con.prepareStatement("insert into stock(store_id,product_id,quantity) values(?,?,?)" +
 					 					 "on conflict(store_id,product_id) do update set quantity = ?");
+			}
 			pstmt.setInt(1, market_id);
 			pstmt.setInt(2, product_id);
 			pstmt.setInt(3, quantity);
@@ -222,7 +236,6 @@ public class Rest extends RestBasis {
 				
 				
 				while( rsMarkets.next() ) {
-					
 					SupermarketItem supermarketItem = new SupermarketItem();
 					supermarketItem.setMaps_id(rsMarkets.getString("google_id"));
 					supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
@@ -232,6 +245,7 @@ public class Rest extends RestBasis {
 					supermarketItem.setLatitude(rsMarkets.getString("latitude"));
 					supermarketItem.setStreet(rsMarkets.getString("street"));
 					supermarketItem.setZip(rsMarkets.getInt("zip"));
+					supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
 					marketList.add(supermarketItem);					
 				}
 				res.setSupermarket(marketList);
@@ -491,6 +505,7 @@ public class Rest extends RestBasis {
 				supermarketItem.setZip(rsMarkets.getInt("zip"));
 				supermarketItem.setLongitude(rsMarkets.getString("longitude"));
 				supermarketItem.setLatitude(rsMarkets.getString("latitude"));
+				supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
 			}
 			pstmt.close();
 			rsMarkets.close();
@@ -736,7 +751,7 @@ public class Rest extends RestBasis {
 		pstmt.close();
 
 		// update location
-		sql = "UPDATE location SET zip = ?, city = ?, street = ?, longitude = ?, latitude = ? WHERE location_id = ?";
+		sql = "UPDATE location SET zip = ?, city = ?, street = ?, longitude = ?, latitude = ?, icon_url = ? WHERE location_id = ?";
 		
 		pstmt = con.prepareStatement(sql);
 		pstmt.setInt(1, Integer.valueOf(req.getZip()));
@@ -745,6 +760,7 @@ public class Rest extends RestBasis {
 		pstmt.setString(4, req.getLongitude());
 		pstmt.setString(5, req.getLatitude());
 		pstmt.setInt(6, locationId);
+		pstmt.setString(7, req.getIcon_url());
 
 		pstmt.executeUpdate();
 		pstmt.close();
@@ -773,7 +789,9 @@ public class Rest extends RestBasis {
 		// \"street\", \"longitude\", \"latitude\") VALUES ('61267', 'Neu-Anspach',
 		// 'TestStra�e', '123', '456') returning location_id;";
 		// TODO zip nicht in string
-		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+//TODO der MYSQL server kommt mit 	RETURN_GENERATED_KEYS nicht klar???	
+		PreparedStatement pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 		int zip = 0;
 		if ( !req.getZip().isEmpty() ) zip = Integer.valueOf(req.getZip());
 		pstmt.setInt(1, zip );
@@ -781,24 +799,26 @@ public class Rest extends RestBasis {
 		pstmt.setString(3, req.getStreet());
 		pstmt.setString(4, req.getLongitude());
 		pstmt.setString(5, req.getLatitude());
-
-		ResultSet rs = pstmt.executeQuery();
+		pstmt.executeUpdate();
+		ResultSet rs = pstmt.getGeneratedKeys();
 		rs.next();
-		String data = rs.getString(1);
-		locationId = Integer.parseInt(data);
+		locationId = rs.getInt(1);
+//		String data = rs.getString(1);
+//		locationId = Integer.parseInt(data);
 		rs.close();
 		pstmt.close();
 
-		sql = "INSERT INTO store (name, location_id, google_id) VALUES (?, " + locationId + ", ?) returning store_id";
-		pstmt = con.prepareStatement(sql);
+		sql = "INSERT INTO store (name, location_id, google_id, icon_url) VALUES (?, ?, ?, ?) returning store_id";
+		pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 		pstmt.setString(1, req.getMarket_name());
-		pstmt.setString(2, req.getMaps_id());
-		// pstmt.setString(2, String.valueOf(locationId));
+		pstmt.setInt(2, locationId);
+		pstmt.setString(3, req.getMaps_id());
+		pstmt.setString(4, req.getIcon_url());
 
-		rs = pstmt.executeQuery();
+		pstmt.executeUpdate();
+		rs = pstmt.getGeneratedKeys();
 		rs.next();
-		data = rs.getString(1);
-		req.setMarket_id(Integer.valueOf(data));
+		req.setMarket_id( rs.getInt(1));
 		rs.close();
 		pstmt.close();
 
