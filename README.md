@@ -41,11 +41,11 @@
 
 **Beispiel:**
 Json Input 1
-```json
+```yaml
 { 
-	"market_id": 1, 
-	"product_id": 1, 	
-	"quantity": 100
+"market_id": 1, 
+"product_id": 1, 	
+"quantity": 100
 } 
 ```
 Json Input 2
@@ -62,11 +62,9 @@ Json Input 2
 ```
 
 Json Output
-```json 
+```yaml 
 {
-
-	"result": "success"
-
+"result": "success"
 }
 ```
 
@@ -146,18 +144,18 @@ Liefert eine Liste aller verfügbaren Produktkategorien zurück.
  
 **Beispiel:**
 Json Input
-```json
+```yaml
 {}
 ```
 
 Json Output
- ```json
+ ```yaml
 {
 	"result": "success",
 	"product": [ 
-		{"product_id": 1, "product_name": "Milch"},
-		{"product_id": 3, "product_name": "Kartoffeln"}
-		]
+	   {"product_id": 1, "product_name": "Milch"},
+	   {"product_id": 3, "product_name": "Kartoffeln"}
+	   ]
 }
 ```
 
@@ -172,7 +170,7 @@ Json Output
  ---
 **Beispiel:**
 Json Input
-```json
+```yaml
 {"id": 47}
 Oder
 {"mapsId": "ChIJiT47naRPqEcRkuiNMlhUlAY"}
@@ -180,7 +178,7 @@ Oder
 {
 ```
 Json Output
- ```json
+ ```yaml
 {
 "result": "success",
 "supermarket": {
@@ -198,14 +196,103 @@ Json Output
 			"id": 26,
 			"name": "Fisch",
 			"availability": 100
-			},
-			{
+	      },
+	      {
 			"id": 162,
 			"name": "Nudeln",
 			"availability": 65
-		}
-		]
+	      }
+	      ]
 	}
 }
 ```  
+
+  ## Bestandsabfrage von Markt
+`POST /market/stock`
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock)
+
+**Anfrage:** `market_id` (prio 1, optional wenn google_id), `google_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
+
+**Antwort:** JSON Liste `product_id`, `product_name`, `quantity`
+
+ 
+**Beispiel:**
+Json Input 1
+```yaml
+{
+"market_id": 1,
+"product_id":  [1, 2]
+}
+```
+Json Input 2
+```yaml
+{
+"google_id": “GOOGLE_DATA”,
+"product_id":  [1, 2]
+}
+
+```
+
+Json Output
+ ```yaml
+{
+"result": "success",
+"product": [ {
+"product_id": 1,
+"product_name": "test",
+"quantity": 50
+}]
+}
+```
+
+
+ ## Supermarkt anlegen, ändern, löschen
+`POST /market/manage`
+URL: [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage)
+
+**Anfrage:** JSON operation(“create”, “modify”, “delete”), market_id, name, city, zip, street, gps_length, gps_width
+
+**Antwort:** `result` (“success” or “error”)
+
+ 
+**Beispiel:**
+Json Input Anlegen
+```yaml
+{ 
+"operation":"create", 
+"name":"REWE", 
+"city":"Bad Nauheim",
+"zip":"61231",
+"street":"Georg-Scheller-Strasse 2-8",
+"gps_length":"8.754167",
+"gps_width":"50.361944"
+}
+```
+Json Input Ändern
+```yaml
+{ 
+"operation":"modify", 
+"market_id":7, 
+"name":"ROWO",
+"city":"Bad Nauheim",
+"zip":"61231", 
+"street":"Georg-Scheller-Strasse 2-10",
+"gps_length":"8.754167", 
+"gps_width":"50.361944" 
+}
+```
+Json Input Löschen
+```yaml
+{
+"operation":"delete", 
+"market_id":9
+}
+```
+Json Output
+ ```yaml
+{
+ "result": "success"
+}
+```
+ 
 
