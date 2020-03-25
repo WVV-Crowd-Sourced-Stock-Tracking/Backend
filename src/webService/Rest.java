@@ -190,7 +190,7 @@ public class Rest extends RestBasis {
 	 * "zip":"61231", "radius": 12000, "product_id": [ 1, 2 ] } JSON output {
 	 * "result": "success", "supermarket": [ { "id": 0, "name": "REWA Center Bad
 	 * Nauheim", "city": "Bad Nauheim", "street": "Georg-Scheller-StraÃŸe 2-8",
-	 * "gps_length": "8.754167", "gps_width": "50.361944" }] }
+	 * "longitude": "8.754167", "latitude": "50.361944" }] }
 	 */
 	@POST
 	@Path("/market/scrape")
@@ -204,14 +204,14 @@ public class Rest extends RestBasis {
 			con = initWS();
 			
 			String zipString = req.getZip();
-			String gps_length = req.getLongitude();
-			String gps_width = req.getLatitude();
+			String longitude = req.getLongitude();
+			String latitude = req.getLatitude();
 			
 			ResultSet rsMarkets = null;
 			ResultSet rsProducts = null;
 			List<SupermarketItem> marketList = new ArrayList<SupermarketItem>();
 			
-			if (zipString.length() > 0 && (gps_length.length() == 0 || gps_width.length() == 0)) {
+			if (zipString.length() > 0 && (longitude.length() == 0 || latitude.length() == 0)) {
 				//TODO SQL Alle mit gleicher Zip
 				int zip = Integer.parseInt(zipString);
 				
@@ -228,8 +228,8 @@ public class Rest extends RestBasis {
 					supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
 					supermarketItem.setMarket_name(rsMarkets.getString("name"));
 					supermarketItem.setCity(rsMarkets.getString("city"));
-					supermarketItem.setLongitude(rsMarkets.getString("gps_length"));
-					supermarketItem.setLatitude(rsMarkets.getString("gps_width"));
+					supermarketItem.setLongitude(rsMarkets.getString("longitude"));
+					supermarketItem.setLatitude(rsMarkets.getString("latitude"));
 					supermarketItem.setStreet(rsMarkets.getString("street"));
 					supermarketItem.setZip(rsMarkets.getInt("zip"));
 					marketList.add(supermarketItem);					
@@ -237,11 +237,11 @@ public class Rest extends RestBasis {
 				res.setSupermarket(marketList);
 				pstmt.close();
 			}
-			else if (gps_length != null && gps_width != null) {
+			else if (longitude != null && latitude != null) {
 				int radius = req.getRadius();
 				// Get Supermarket IDs via API			
 				
-				JsonNode actualObj = google_api.mapsApi.scrapeAreaForMarkets(gps_length, gps_width, radius);
+				JsonNode actualObj = google_api.mapsApi.scrapeAreaForMarkets(longitude, latitude, radius);
 				 
 				if (actualObj != null) {
 					for(final JsonNode objNode : actualObj) {
@@ -253,7 +253,7 @@ public class Rest extends RestBasis {
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							
-							String sql = "select l.zip, l.city, l.street, l.gps_length, l.gps_width from store s, location l "
+							String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude from store s, location l "
 									+ "where s.store_id = ? and l.location_id=s.location_id";
 							PreparedStatement pstmt2 = null;
 							pstmt2 = con.prepareStatement( sql );
@@ -489,8 +489,8 @@ public class Rest extends RestBasis {
 				supermarketItem.setCity(rsMarkets.getString("city"));
 				supermarketItem.setStreet(rsMarkets.getString("street"));
 				supermarketItem.setZip(rsMarkets.getInt("zip"));
-				supermarketItem.setLongitude(rsMarkets.getString("gps_length"));
-				supermarketItem.setLatitude(rsMarkets.getString("gps_width"));
+				supermarketItem.setLongitude(rsMarkets.getString("longitude"));
+				supermarketItem.setLatitude(rsMarkets.getString("latitude"));
 			}
 			pstmt.close();
 			rsMarkets.close();
@@ -643,7 +643,7 @@ public class Rest extends RestBasis {
 	 * URL http://127.0.0.1:8080//Backend/ws/rest/market/manage JSON input {
 	 * "operation":"create", "market_id": 1, "name":"REWE", "city":"Bad Nauheim",
 	 * "zip":"61231", "street":"Georg-Scheller-Strasse 2-8",
-	 * "gps_length":"8.754167", "gps_width":"50.361944" } JSON output { "result":
+	 * "longitude":"8.754167", "latitude":"50.361944" } JSON output { "result":
 	 * "success" }
 	 */
 	@POST
@@ -736,7 +736,7 @@ public class Rest extends RestBasis {
 		pstmt.close();
 
 		// update location
-		sql = "UPDATE location SET zip = ?, city = ?, street = ?, gps_length = ?, gps_width = ? WHERE location_id = ?";
+		sql = "UPDATE location SET zip = ?, city = ?, street = ?, longitude = ?, latitude = ? WHERE location_id = ?";
 		
 		pstmt = con.prepareStatement(sql);
 		pstmt.setInt(1, Integer.valueOf(req.getZip()));
@@ -768,9 +768,9 @@ public class Rest extends RestBasis {
 		GenericResponse res = new GenericResponse();
 		int locationId;
 
-		String sql = "INSERT INTO location (zip, city, street, gps_length, gps_width) VALUES (?, ?, ?, ?, ?) returning location_id";
+		String sql = "INSERT INTO location (zip, city, street, longitude, latitude) VALUES (?, ?, ?, ?, ?) returning location_id";
 		// String sql = "INSERT INTO \"public\".\"location\" (\"zip\", \"city\",
-		// \"street\", \"gps_length\", \"gps_width\") VALUES ('61267', 'Neu-Anspach',
+		// \"street\", \"longitude\", \"latitude\") VALUES ('61267', 'Neu-Anspach',
 		// 'TestStraï¿½e', '123', '456') returning location_id;";
 		// TODO zip nicht in string
 		PreparedStatement pstmt = con.prepareStatement(sql);
@@ -1256,8 +1256,8 @@ public class Rest extends RestBasis {
 	 * @param lng	in °
 	 * @param radius in meter
 	 * For better DB performance
-	 * CREATE INDEX IDX_GPS_LENGTH ON location(gps_length)
-	 * CREATE INDEX IDX_GPS_WIDTH ON location(gps_width)
+	 * CREATE INDEX IDX_LONGITUDE ON location(longitude)
+	 * CREATE INDEX IDX_LATITUDE ON location(latitude)
 	 */
 	private List<SupermarketItem> findMarkets( Connection con, double lat, double lng, long radius) {
 		List<SupermarketItem> list = new ArrayList<SupermarketItem>();
@@ -1266,12 +1266,12 @@ public class Rest extends RestBasis {
 		corners[0] = bearing( center, radius, 315);			//Upper left
 		corners[1] = bearing( center, radius, 135);			//Lower right
 		
-		String sql = "select l.zip, l.city, l.street, l.gps_length, l.gps_width, " +
+		String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude, " +
 					 "s.store_id,s.name,s.google_id " +
 					 "from store s, location l " +
 					 "where l.location_id=s.location_id and " +
-					 "? <= gps_width and gps_width <= ? and " +
-					 "? <= gps_length and gps_length <= ?";
+					 "? <= latitude and latitude <= ? and " +
+					 "? <= longitude and longitude <= ?";
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = con.prepareStatement( sql );

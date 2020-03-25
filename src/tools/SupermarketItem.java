@@ -91,8 +91,8 @@ public class SupermarketItem {
 	 * @param name
 	 * @param city
 	 * @param street
-	 * @param gps_length
-	 * @param gps_width
+	 * @param longitude
+	 * @param latitude
 	 */
 	public SupermarketItem(int market_id, String market_name, String city, String street, String longitude, String latitude, String distance, String maps_id, Boolean open) {
 		super();
