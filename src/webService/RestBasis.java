@@ -15,33 +15,33 @@ import org.apache.commons.dbcp.BasicDataSourceFactory;
 
 public class RestBasis extends HttpServlet{
 	private static final long serialVersionUID = 1L;
-//	private final static String DBRESOURCE = "jdbc/wvv";
-//	private static Context initCtx = null;
-//	private static Context envCtx = null;
-//	private static DataSource dataSource = null;
+	private final static String DBRESOURCE = "jdbc/wvv2";
+	private static Context initCtx = null;
+	private static Context envCtx = null;
+	private static DataSource dataSource = null;
 	
-	private static BasicDataSource dataSource = null;
+//	private static BasicDataSource dataSource = null;
 
-//	protected Connection con = null;
+	protected Connection con = null;
 
 	protected Connection initWS() throws Exception {
 		Connection con = null;
 		boolean ret = true;
 		if (dataSource == null) {
-			
-			String d = "org.postgresql.Driver";
-			String u = "jdbc:postgresql://ec2-46-137-84-173.eu-west-1.compute.amazonaws.com:5432/d1ssropt4bpql2";
+			/*
+			String d = "org.mysql.jdbc.Driver";
+			String u = "jdbc:mysql://s217.goserver.host:3306/web157_db2";
 			Properties dbcpProperties = new Properties();
 			dbcpProperties.put("driverClassName", d);
 			dbcpProperties.put("url", u);
-			dbcpProperties.put("username", "jqjbfxsjohmmhe" );
-			dbcpProperties.put("password", "bc7cf56183d22703c7915ffedd717fae431cd6847152ad572035fec60fff33d4" );
+			dbcpProperties.put("username", "web157_2" );
+			dbcpProperties.put("password", "YocyTB8JkOLZnSMw" );
 			dbcpProperties.put("defaultAutoCommit", "FALSE");
 			dbcpProperties.put("maxActive", "1");
 			dbcpProperties.put("ssl", "true");
 
 			dataSource = (BasicDataSource) BasicDataSourceFactory.createDataSource(dbcpProperties);
-/*			
+			*/
 			if (envCtx == null) {
 				if (initCtx == null) {
 					initCtx = new InitialContext();
@@ -49,7 +49,7 @@ public class RestBasis extends HttpServlet{
 				envCtx = (Context) initCtx.lookup("java:comp/env");
 			}
 			dataSource = (DataSource) envCtx.lookup(DBRESOURCE);
-*/
+
 			if (dataSource == null) {
 				ret = false;
 			}
