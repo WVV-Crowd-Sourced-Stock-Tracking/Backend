@@ -14,9 +14,9 @@
 
 [Supermarkt Information Abfrage - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.lc4whgo30cgm)
 
-[Bestandsabfrage(google id wird noch hinzugefügt)  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.bgsyhocc8v4x)
+[Bestandsabfrage(google id wird noch hinzugefügt)](#bestandsabfrage-von-markt)
 
-[Supermarkt anlegen, ändern, löschen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.txfaibqq7yn2)
+[Supermarkt anlegen, ändern, löschen](#supermarkt-anlegen,-ändern,-löschen)
 
 [Produktkategorie anlegen, ändern, löschen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.i8no2bq3i5q6)
 
