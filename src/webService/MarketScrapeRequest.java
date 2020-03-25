@@ -5,8 +5,8 @@ import java.util.List;
 
 public class MarketScrapeRequest {
 	private String zip = "";
-	private String gps_length = "";
-	private String gps_width = "";
+	private String longitude = "";
+	private String latitude = "";
 	private int radius = 0;				//UoM = meter
 	private List<Integer> product_id = new ArrayList<Integer>();
 	private boolean details_requested = true;
@@ -17,17 +17,17 @@ public class MarketScrapeRequest {
 	public void setZip(String zip) {
 		this.zip = zip;
 	}
-	public String getGps_length() {
-		return gps_length;
+	public String getLongitude() {
+		return longitude;
 	}
-	public void setGps_length(String gps_length) {
-		this.gps_length = gps_length;
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
 	}
-	public String getGps_width() {
-		return gps_width;
+	public String getLatitude() {
+		return latitude;
 	}
-	public void setGps_width(String gps_width) {
-		this.gps_width = gps_width;
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
 	}
 	public int getRadius() {
 		return radius;

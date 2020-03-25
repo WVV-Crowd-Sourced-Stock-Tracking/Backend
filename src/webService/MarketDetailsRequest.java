@@ -1,21 +1,18 @@
 package webService;
 
 public class MarketDetailsRequest {
-	private int id;
-	private String mapsId;
-	
-	public int getId() {
-		return id;
+	private int market_id;
+	private String maps_id;
+	public int getMarket_id() {
+		return market_id;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setMarket_id(int market_id) {
+		this.market_id = market_id;
 	}
-	public String getMapsId() {
-		return mapsId;
+	public String getMaps_id() {
+		return maps_id;
 	}
-	public void setMapsId(String mapsId) {
-		this.mapsId = mapsId;
+	public void setMaps_id(String maps_id) {
+		this.maps_id = maps_id;
 	}
-	
-	
 }

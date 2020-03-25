@@ -3,7 +3,7 @@ package tools;
 public class MarketTransmitItem {
 	private int market_id = 0;
 	private int product_id = 0;
-	private int quantity = 0;
+	private int availability = 0;
 	public int getMarket_id() {
 		return market_id;
 	}
@@ -16,10 +16,10 @@ public class MarketTransmitItem {
 	public void setProduct_id(int product_id) {
 		this.product_id = product_id;
 	}
-	public int getQuantity() {
-		return quantity;
+	public int getAvailability() {
+		return availability;
 	}
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
+	public void setAvailability(int availability) {
+		this.availability = availability;
 	}
 }

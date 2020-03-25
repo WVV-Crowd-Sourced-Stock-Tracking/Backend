@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tools.GenericResponse;
-import tools.json_items.ProductItem;
-import tools.json_items.SupermarketItem;
+import tools.ProductAvailabilityItem;
+import tools.SupermarketItem;
 
 public class MarketDetailsResponse extends GenericResponse {
 	private SupermarketItem supermarket;

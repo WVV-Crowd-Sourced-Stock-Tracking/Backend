@@ -31,8 +31,7 @@ import tools.Location;
 import tools.MarketStockItem;
 import tools.MarketTransmitItem;
 import tools.ProductItem;
-import tools.Supermarket;
-import tools.json_items.SupermarketItem;
+import tools.SupermarketItem;
 
 @Path("/rest")
 public class Rest extends RestBasis {
@@ -77,7 +76,7 @@ public class Rest extends RestBasis {
 			}
 			if ( req.getBulk().size() > 0 ) {
 				for( MarketTransmitItem i : req.getBulk() ) {
-					saveTransmit( con, i.getMarket_id(), i.getProduct_id(), i.getQuantity() );
+					saveTransmit( con, i.getMarket_id(), i.getProduct_id(), i.getAvailability() );
 				}
 			}
 			con.commit();
@@ -97,7 +96,6 @@ public class Rest extends RestBasis {
 	
 	private static final int MAX_HISTORY = 5;			//Max # of records in stock_history for one stock/product
 	private void saveTransmit( Connection con, int market_id, int product_id, int quantity) {
-		int ret = 0;
 		int anz = 0;
 		int sum = 0;
 		Timestamp minTs = null;
@@ -124,7 +122,7 @@ public class Rest extends RestBasis {
 				pstmt.setInt(1, market_id);
 				pstmt.setInt(2, product_id);
 				pstmt.setTimestamp(3, minTs);
-				ret = pstmt.executeUpdate();
+				pstmt.executeUpdate();
 				pstmt.close();
 			}
 			else {								//We are not at the max # of records 
@@ -138,7 +136,7 @@ public class Rest extends RestBasis {
 			pstmt.setInt(2, product_id);
 			pstmt.setInt(3, quantity);
 			pstmt.setInt(4, quantity);
-			ret = pstmt.executeUpdate();
+			pstmt.executeUpdate();
 			pstmt.close();
 			
 			quantity = sum/anz;
@@ -149,7 +147,7 @@ public class Rest extends RestBasis {
 			pstmt.setInt(2, product_id);
 			pstmt.setInt(3, quantity);
 			pstmt.setInt(4, quantity);
-			ret = pstmt.executeUpdate();
+			pstmt.executeUpdate();
 			pstmt.close();
 
 		} catch (SQLException ex) {
@@ -206,8 +204,8 @@ public class Rest extends RestBasis {
 			con = initWS();
 			
 			String zipString = req.getZip();
-			String gps_length = req.getGps_length();
-			String gps_width = req.getGps_width();
+			String gps_length = req.getLongitude();
+			String gps_width = req.getLatitude();
 			
 			ResultSet rsMarkets = null;
 			ResultSet rsProducts = null;
@@ -225,19 +223,16 @@ public class Rest extends RestBasis {
 				
 				while( rsMarkets.next() ) {
 					
-					Supermarket market = new Supermarket();
-					Location location = new Location();
-					
-					market.setGoogle_id(rsMarkets.getString("google_id"));
-					market.setMarket_id(rsMarkets.getInt("store_id"));
-					market.setName(rsMarkets.getString("name"));
-					location.setCity(rsMarkets.getString("city"));
-					location.setGpsLength(rsMarkets.getString("gps_length"));
-					location.setGpsWidth(rsMarkets.getString("gps_width"));
-					location.setStreet(rsMarkets.getString("street"));
-					location.setZip(rsMarkets.getInt("zip"));
-					market.setLocation(location);
-					marketList.add(new SupermarketItem(market));					
+					SupermarketItem supermarketItem = new SupermarketItem();
+					supermarketItem.setMaps_id(rsMarkets.getString("google_id"));
+					supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
+					supermarketItem.setMarket_name(rsMarkets.getString("name"));
+					supermarketItem.setCity(rsMarkets.getString("city"));
+					supermarketItem.setLongitude(rsMarkets.getString("gps_length"));
+					supermarketItem.setLatitude(rsMarkets.getString("gps_width"));
+					supermarketItem.setStreet(rsMarkets.getString("street"));
+					supermarketItem.setZip(rsMarkets.getInt("zip"));
+					marketList.add(supermarketItem);					
 				}
 				res.setSupermarket(marketList);
 				pstmt.close();
@@ -250,11 +245,11 @@ public class Rest extends RestBasis {
 				 
 				if (actualObj != null) {
 					for(final JsonNode objNode : actualObj) {
-						Supermarket market = new Supermarket();
-						market.setName(objNode.path("name").asText());
-						market.setGoogle_id(objNode.path("id").asText());
+						SupermarketItem market = new SupermarketItem();
+						market.setMarket_name(objNode.path("name").asText());
+						market.setMaps_id(objNode.path("id").asText());
 						market.setDistance(objNode.path("distance").asText());
-						market.setOpenNow(objNode.path("open_now").asBoolean());
+						market.setOpen(objNode.path("open_now").asBoolean());
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							
@@ -269,28 +264,28 @@ public class Rest extends RestBasis {
 								location.setZip(rs.getInt(1));
 								location.setCity(rs.getString(2));
 								location.setStreet(rs.getString(3));
-								location.setGpsLength(rs.getString(4));
-								location.setGpsWidth(rs.getString(5));
+								location.setLongitude(rs.getString(4));
+								location.setLatitude(rs.getString(5));
 							}
 							rs.close();
 							pstmt2.close();
 							
 							if (!(location.getZip()>500)) {
 								//get zip and address-info from API
-								location = apiGetLocation(market.getGoogle_id(), location);
-								location.setGpsLength(objNode.findPath("longitude").asText());
-								location.setGpsWidth(objNode.findPath("latitude").asText());
+								location = apiGetLocation(market.getMaps_id(), location);
+								location.setLongitude(objNode.findPath("longitude").asText());
+								location.setLatitude(objNode.findPath("latitude").asText());
 								
 								MarketManageRequest mmr = new MarketManageRequest();
 								market.setLocation(location);
 								
 								mmr.setOperation("modify");
 								mmr.setMarket_id(market.getMarket_id());
-								mmr.setName(market.getName());
+								mmr.setMarket_name(market.getMarket_name());
 								mmr.setZip(Integer.toString(location.getZip()));
-								mmr.setGps_length(location.getGpsLength());
-								mmr.setGps_width(location.getGpsWidth());
-								mmr.setGoogle_id(market.getGoogle_id());
+								mmr.setLongitude(location.getLongitude());
+								mmr.setLatitude(location.getLatitude());
+								mmr.setMaps_id(market.getMaps_id());
 								mmr.setStreet(location.getStreet());
 								mmr.setCity(location.getCity());
 								marketManageEdit(con, mmr);
@@ -303,24 +298,24 @@ public class Rest extends RestBasis {
 							// add market to db
 							MarketManageRequest mmr = new MarketManageRequest();
 							Location location = new Location();
-							location.setGpsLength(objNode.findPath("longitude").asText());
-							location.setGpsWidth(objNode.findPath("latitude").asText());
-							location = apiGetLocation(market.getGoogle_id(), location);
+							location.setLongitude(objNode.findPath("longitude").asText());
+							location.setLatitude(objNode.findPath("latitude").asText());
+							location = apiGetLocation(market.getMaps_id(), location);
 							market.setLocation(location);
 							
 							mmr.setOperation("create");
-							mmr.setName(market.getName());
+							mmr.setMarket_name(market.getMarket_name());
 							mmr.setZip(Integer.toString(location.getZip()));
-							mmr.setGps_length(location.getGpsLength());
-							mmr.setGps_width(location.getGpsWidth());
+							mmr.setLongitude(location.getLongitude());
+							mmr.setLatitude(location.getLatitude());
 							mmr.setStreet(location.getStreet());
-							mmr.setGoogle_id(market.getGoogle_id());
+							mmr.setMaps_id(market.getMaps_id());
 							mmr.setCity(location.getCity());
 							marketManageAdd( con, mmr );
 							market.setMarket_id( mmr.getMarket_id() );
 						}
 						
-						marketList.add(new SupermarketItem(market));						
+						marketList.add(market);						
 					}
 				}				
 				res.setSupermarket(marketList);
@@ -350,24 +345,24 @@ public class Rest extends RestBasis {
 				
 				//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
 				SupermarketItem currMarket;
-				List<List<tools.json_items.ProductItem>> productsInMarkets = new ArrayList<List<tools.json_items.ProductItem>>();
+				List<List<tools.ProductAvailabilityItem>> productsInMarkets = new ArrayList<List<tools.ProductAvailabilityItem>>();
 				Iterator<SupermarketItem> marketIterator = marketList.iterator();
-				List<tools.json_items.ProductItem> singleMarketProducts = null;
+				List<tools.ProductAvailabilityItem> singleMarketProducts = null;
 				
 				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
 				
 				while (marketIterator.hasNext()) {
 					currMarket = marketIterator.next();
-					singleMarketProducts = new ArrayList<tools.json_items.ProductItem>();
+					singleMarketProducts = new ArrayList<tools.ProductAvailabilityItem>();
 					//Create ProductID-String for sql query
 					PreparedStatement pstmt = null;
 					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
-					pstmt.setInt(1, currMarket.getId());
+					pstmt.setInt(1, currMarket.getMarket_id());
 					rsProducts = pstmt.executeQuery();
 					
 					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
 					while( rsProducts.next() ) {
-						tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
+						tools.ProductAvailabilityItem jsonProductItem = new tools.ProductAvailabilityItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
 						singleMarketProducts.add(jsonProductItem);
 					}
 					rsProducts.close();
@@ -409,14 +404,14 @@ public class Rest extends RestBasis {
 	
 	
 	
-	private boolean marketIsInDb(Connection con, Supermarket market) {
+	private boolean marketIsInDb(Connection con, SupermarketItem market) {
 		try {
 			String sql = "";
 			PreparedStatement pstmt = null;
 				sql = "select store.store_id from store "
 					+ "where store.google_id = ?";
 				pstmt = con.prepareStatement( sql );
-				pstmt.setString(1, market.getGoogle_id());
+				pstmt.setString(1, market.getMaps_id());
 				
 				ResultSet rs = pstmt.executeQuery();
 				int count = 0;
@@ -472,12 +467,12 @@ public class Rest extends RestBasis {
 		Connection con = null;
 		MarketDetailsResponse res = new MarketDetailsResponse();
 		
-		SupermarketItem supermarketItem = null;
+		SupermarketItem supermarketItem = res.getSupermarket();
 		try {
 			con = initWS();
 			
-			int id = req.getId();
-			String googleId = req.getMapsId();
+			int id = req.getMarket_id();
+			String googleId = req.getMaps_id();
 			
 			ResultSet rsMarkets = null;
 			ResultSet rsProducts = null;
@@ -487,39 +482,30 @@ public class Rest extends RestBasis {
 			pstmt.setString(2, googleId);
 			rsMarkets = pstmt.executeQuery();
 			
-			Supermarket supermarket = new Supermarket();
-			
 			while(rsMarkets.next() ) {
-				supermarket.setName(rsMarkets.getString("name"));
-				supermarket.setGoogle_id(rsMarkets.getString("google_id"));
-				supermarket.setMarket_id(rsMarkets.getInt("store_id"));
-				
-				Location location = new Location();
-				location.setCity(rsMarkets.getString("city"));
-				location.setStreet(rsMarkets.getString("street"));
-				location.setZip(rsMarkets.getInt("zip"));
-				location.setGpsLength(rsMarkets.getString("gps_length"));
-				location.setGpsWidth(rsMarkets.getString("gps_width"));
-				
-				supermarket.setLocation(location);
+				supermarketItem.setMarket_name(rsMarkets.getString("name"));
+				supermarketItem.setMaps_id(rsMarkets.getString("google_id"));
+				supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
+				supermarketItem.setCity(rsMarkets.getString("city"));
+				supermarketItem.setStreet(rsMarkets.getString("street"));
+				supermarketItem.setZip(rsMarkets.getInt("zip"));
+				supermarketItem.setLongitude(rsMarkets.getString("gps_length"));
+				supermarketItem.setLatitude(rsMarkets.getString("gps_width"));
 			}
 			pstmt.close();
 			rsMarkets.close();
 			
-			supermarketItem = new SupermarketItem(supermarket);
-			
 			//Create ProductID-String for sql query
 			pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? order by s.quantity desc");
-			pstmt.setInt(1, supermarket.getMarket_id());
+			pstmt.setInt(1, supermarketItem.getMarket_id());
 			rsProducts = pstmt.executeQuery();
 				
 			while( rsProducts.next() ) {
-				tools.json_items.ProductItem jsonProductItem = new tools.json_items.ProductItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
+				tools.ProductAvailabilityItem jsonProductItem = new tools.ProductAvailabilityItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
 				supermarketItem.getProducts().add(jsonProductItem);
 			}
 			rsProducts.close();
 			pstmt.close();
-			res.setSupermarket(supermarketItem);
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
@@ -595,12 +581,12 @@ public class Rest extends RestBasis {
 				pstmt = con.prepareStatement( sql );
 				pstmt.setInt(1, req.getMarket_id());
 			}
-			else if ( !req.getGoogle_id().isEmpty() ) { 
+			else if ( !req.getMaps_id().isEmpty() ) { 
 				sql = "select s.product_id,p.name,s.quantity from store m, stock s, product p " +
 						 "where m.google_id=? and s.product_id in(?) and m.store_id=s.store_id and s.product_id=p.product_id " +
 						 "order by p.name";
 				pstmt = con.prepareStatement( sql );
-				pstmt.setString(1, req.getGoogle_id());
+				pstmt.setString(1, req.getMaps_id());
 			}
 			if ( pstmt != null ) {
 				for ( Integer p :req.getProduct_id() ) {
@@ -756,8 +742,8 @@ public class Rest extends RestBasis {
 		pstmt.setInt(1, Integer.valueOf(req.getZip()));
 		pstmt.setString(2, req.getCity());
 		pstmt.setString(3, req.getStreet());
-		pstmt.setString(4, req.getGps_length());
-		pstmt.setString(5, req.getGps_width());
+		pstmt.setString(4, req.getLongitude());
+		pstmt.setString(5, req.getLatitude());
 		pstmt.setInt(6, locationId);
 
 		pstmt.executeUpdate();
@@ -765,7 +751,7 @@ public class Rest extends RestBasis {
 
 		sql = "UPDATE store SET name = ? WHERE store_id = ?";
 		pstmt = con.prepareStatement(sql);
-		pstmt.setString(1, req.getName());
+		pstmt.setString(1, req.getMarket_name());
 		pstmt.setInt(2, req.getMarket_id());
 
 		pstmt.executeUpdate();
@@ -793,8 +779,8 @@ public class Rest extends RestBasis {
 		pstmt.setInt(1, zip );
 		pstmt.setString(2, req.getCity());
 		pstmt.setString(3, req.getStreet());
-		pstmt.setString(4, req.getGps_length());
-		pstmt.setString(5, req.getGps_width());
+		pstmt.setString(4, req.getLongitude());
+		pstmt.setString(5, req.getLatitude());
 
 		ResultSet rs = pstmt.executeQuery();
 		rs.next();
@@ -803,10 +789,10 @@ public class Rest extends RestBasis {
 		rs.close();
 		pstmt.close();
 
-		sql = "INSERT INTO public.store (name, location_id, google_id) VALUES (?, " + locationId + ", ?) returning store_id";
+		sql = "INSERT INTO store (name, location_id, google_id) VALUES (?, " + locationId + ", ?) returning store_id";
 		pstmt = con.prepareStatement(sql);
-		pstmt.setString(1, req.getName());
-		pstmt.setString(2, req.getGoogle_id());
+		pstmt.setString(1, req.getMarket_name());
+		pstmt.setString(2, req.getMaps_id());
 		// pstmt.setString(2, String.valueOf(locationId));
 
 		rs = pstmt.executeQuery();
@@ -1303,12 +1289,12 @@ public class Rest extends RestBasis {
 	//TODO			item.setZip(rs.getInt(1));
 				item.setCity(rs.getString(2));
 				item.setStreet(rs.getString(3));
-				item.setLng(rs.getString(4));
-				item.setLat(rs.getString(5));
-				item.setId( rs.getInt(6));
-				item.setName(rs.getString(7));
-				item.setMapsId(rs.getString(8));
-				int distance = distance(lat, lng, Double.valueOf(item.getLat()), Double.valueOf(item.getLng()) );
+				item.setLongitude(rs.getString(4));
+				item.setLatitude(rs.getString(5));
+				item.setMarket_id( rs.getInt(6));
+				item.setMarket_name(rs.getString(7));
+				item.setMaps_id(rs.getString(8));
+				int distance = distance(lat, lng, Double.valueOf(item.getLatitude()), Double.valueOf(item.getLongitude()) );
 				item.setDistance(String.format("%d", distance));
 				list.add(item);
 			}

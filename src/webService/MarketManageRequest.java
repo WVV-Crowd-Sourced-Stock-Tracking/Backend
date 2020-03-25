@@ -3,13 +3,13 @@ package webService;
 public class MarketManageRequest {
 	private String operation = "";
 	private int market_id = 0;
-	private String name = "";
+	private String market_name = "";
 	private String city = "";
 	private String street = "";
 	private String zip = "";
-	private String gps_length = "";
-	private String gps_width = "";
-	private String google_id = "";
+	private String longitude = "";
+	private String latitude = "";
+	private String maps_id = "";
 	
 	public String getOperation() {
 		return operation;
@@ -22,12 +22,6 @@ public class MarketManageRequest {
 	}
 	public void setMarket_id(int market_id) {
 		this.market_id = market_id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
 	}
 	public String getCity() {
 		return city;
@@ -47,23 +41,28 @@ public class MarketManageRequest {
 	public void setZip(String zip) {
 		this.zip = zip;
 	}
-	public String getGps_length() {
-		return gps_length;
+	public String getMarket_name() {
+		return market_name;
 	}
-	public void setGps_length(String gps_length) {
-		this.gps_length = gps_length;
+	public void setMarket_name(String market_name) {
+		this.market_name = market_name;
 	}
-	public String getGps_width() {
-		return gps_width;
+	public String getLongitude() {
+		return longitude;
 	}
-	public void setGps_width(String gps_width) {
-		this.gps_width = gps_width;
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
 	}
-	public String getGoogle_id() {
-		return google_id;
+	public String getLatitude() {
+		return latitude;
 	}
-	public void setGoogle_id(String google_id) {
-		this.google_id = google_id;
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
 	}
-	
+	public String getMaps_id() {
+		return maps_id;
+	}
+	public void setMaps_id(String maps_id) {
+		this.maps_id = maps_id;
+	}
 }

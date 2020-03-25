@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tools.GenericResponse;
-import tools.json_items.ProductItem;
-import tools.json_items.SupermarketItem;
+import tools.ProductAvailabilityItem;
+import tools.SupermarketItem;
 
 public class MarketScrapeResponse extends GenericResponse {
 	private List<SupermarketItem> supermarket = new ArrayList<SupermarketItem>();
-	private List<List<ProductItem>> productItems = new ArrayList<List<ProductItem>>();
+	private List<List<ProductAvailabilityItem>> productItems = new ArrayList<List<ProductAvailabilityItem>>();
 
 	public List<SupermarketItem> getSupermarket() {
 		return supermarket;
@@ -19,11 +19,11 @@ public class MarketScrapeResponse extends GenericResponse {
 		this.supermarket = supermarket;
 	}
 
-	public List<List<ProductItem>> getProductItems() {
+	public List<List<ProductAvailabilityItem>> getProductItems() {
 		return productItems;
 	}
 
-	public void setProductItems(List<List<ProductItem>> productItems) {
+	public void setProductItems(List<List<ProductAvailabilityItem>> productItems) {
 		this.productItems = productItems;
 	}
 }
