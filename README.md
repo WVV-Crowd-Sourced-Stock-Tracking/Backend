@@ -1,5 +1,5 @@
 # Backend
-### Die Dokumentation befindet sich im Aufbau. Bis dahin schaut hier vorbei: https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit?usp=sharing
+### Die Dokumentation befindet sich im Aufbau. Bei Fragen/Unklarheiten einfach melden. Kleine Fehler können sich eingeschlichen haben, wir bitten euch darum uns diese mitzuteilen. :)
 
 
 # Endpoints: REST-API
