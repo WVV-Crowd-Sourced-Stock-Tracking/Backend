@@ -1,5 +1,5 @@
 # Backend
-### Die Dokumentation befindet sich im Aufbau. Bei Fragen/Unklarheiten einfach melden. Kleine Fehler können sich eingeschlichen haben, wir bitten euch darum uns diese mitzuteilen. :)
+### Bei Fragen/Unklarheiten einfach melden. Kleine Fehler können sich eingeschlichen haben, wir bitten euch darum uns diese mitzuteilen. :)
 
 
 # Endpoints: REST-API
