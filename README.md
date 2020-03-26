@@ -19,7 +19,7 @@
 
 [Supermarkt anlegen, ändern, löschen](#supermarkt-anlegen-ändern-löschen)
 
-[Produktkategorie anlegen, ändern, löschen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.i8no2bq3i5q6)
+[Produktkategorie anlegen, ändern, löschen](#produktkategorie-anlegen-ändern-löschen)
 
 [EAN anlegen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.fiw7wvq81pfa)
 
@@ -293,6 +293,39 @@ Json Input Löschen
 ```
 Json Output
  ```yaml
+{
+ "result": "success"
+}
+```
+
+## Produktkategorie anlegen, ändern, löschen
+`POST /product/manage`
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/product/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/product/mamage)
+
+**Anfrage:** `operation`, `product_id`, `name`
+
+- `operation` : "create", "modify" or "delete"
+	- create:  `name` ist name des neuen Produktes, `product_id` wird ignoriert
+	- modify: `product_id` zu modifizierendes Produkt, `name` Neuer name des Produktes
+	- delete: `product_id` zu löschendes Produkt, `name` wird ignoriert
+
+**Antwort:** `result` 
+
+- `result`:  “success” or “error”
+
+ 
+**Beispiel:**
+Json Input
+```yaml
+{
+"operation":"create",
+"product_id": 1,
+"name":"Milch"
+}
+```
+
+Json Output
+ ```json
 {
  "result": "success"
 }
