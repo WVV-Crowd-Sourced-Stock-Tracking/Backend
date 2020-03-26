@@ -29,7 +29,9 @@
 [EAN anlegen](#ean-anlegen)
 
 ---
----
+
+# Supermarkt
+
 
 ## Bestandsabfrage von Markt
 `POST /market/stock`
@@ -181,7 +183,6 @@ Json Output
 
 **Antwort:** JSON mit `result`, Liste `supermarket`mit Marktinformationen, sowie dem erfassten Bestand
 
- ---
 **Beispiel:**
 Json Input
 ```yaml
@@ -271,6 +272,10 @@ Json Output
 }
 ```  
 
+---
+
+# Produkte
+
 ## Abfrage aller Produktkategorien
 `POST /product/scrape`
 
@@ -333,6 +338,11 @@ Json Output
    "result": "success"
 }
 ```
+
+---
+
+# EAN
+
 
 ## EAN abfragen
 `POST /product_ean/scrape`
