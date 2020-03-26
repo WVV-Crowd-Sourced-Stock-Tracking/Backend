@@ -13,17 +13,15 @@
 
 [Market Details abfragen](#market-details-abfragen)
 
-[Supermarkt Information Abfrage - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.lc4whgo30cgm)
-
 [Bestandsabfrage(google id wird noch hinzugefügt)](#bestandsabfrage-von-markt)
 
 [Supermarkt anlegen, ändern, löschen](#supermarkt-anlegen-ändern-löschen)
 
 [Produktkategorie anlegen, ändern, löschen](#produktkategorie-anlegen-ändern-löschen)
 
-[EAN anlegen  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.fiw7wvq81pfa)
+[EAN anlegen](#ean-anlegen)
 
-[EAN abfrage  - Google Doc](https://docs.google.com/document/d/1UPu3-m0V8NW_PgF-WlSM_9aRWLjnxN3dYn2T1G6Oucw/edit#heading=h.zccauwllf4zp)
+[EAN abfragen](#ean-abfragen)
 
 
 
@@ -243,12 +241,13 @@ Json Input 2
 Json Output
  ```yaml
 {
-"result": "success",
-"product": [ {
-"product_id": 1,
-"product_name": "test",
-"quantity": 50
-}]
+   "result": "success",
+   "product": [ {
+      "product_id": 1,
+      "product_name": "test",
+      "quantity": 50
+   }
+   ]
 }
 ```
 
@@ -267,39 +266,39 @@ Json Output
 Json Input Anlegen
 ```yaml
 { 
-"operation":"create", 
-"name":"REWE", 
-"city":"Bad Nauheim",
-"zip":"61231",
-"street":"Georg-Scheller-Strasse 2-8",
-"gps_length":"8.754167",
-"gps_width":"50.361944"
+   "operation":"create", 
+   "name":"REWE", 
+   "city":"Bad Nauheim",
+   "zip":"61231",
+   "street":"Georg-Scheller-Strasse 2-8",
+   "gps_length":"8.754167",
+   "gps_width":"50.361944"
 }
 ```
 Json Input Ändern
 ```yaml
 { 
-"operation":"modify", 
-"market_id":7, 
-"name":"ROWO",
-"city":"Bad Nauheim",
-"zip":"61231", 
-"street":"Georg-Scheller-Strasse 2-10",
-"gps_length":"8.754167", 
-"gps_width":"50.361944" 
+   "operation":"modify", 
+   "market_id":7, 
+   "name":"ROWO",
+   "city":"Bad Nauheim",
+   "zip":"61231", 
+   "street":"Georg-Scheller-Strasse 2-10",
+   "gps_length":"8.754167", 
+   "gps_width":"50.361944" 
 }
 ```
 Json Input Löschen
 ```yaml
 {
-"operation":"delete", 
-"market_id":9
+   "operation":"delete", 
+   "market_id":9
 }
 ```
 Json Output
  ```yaml
 {
- "result": "success"
+   "result": "success"
 }
 ```
 
@@ -324,17 +323,85 @@ Json Output
 Json Input
 ```yaml
 {
-"operation":"create",
-"product_id": 1,
-"name":"Milch"
+   "operation":"create",
+   "product_id": 1,
+   "name":"Milch"
 }
 ```
 
 Json Output
  ```json
 {
- "result": "success"
+   "result": "success"
 }
 ```
+
+
+  ## EAN anlegen
+`POST /product_ean/manage`
+
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/manage)
+
+**Anfrage:** JSON mit `ean`, `product_id`
+- `ean`: 8- oder 13-stellige [EAN](https://de.wikipedia.org/wiki/European_Article_Number)
+- `product_id`: interne product_id, der die übergebene EAN zugeordnet werden soll. 
+	- *siehe dazu*: [/product/scrape](#abfrage-aller-produktkategorien)
+
+
+**Antwort:** `result` 
+
+- `result`:  “success” or “error”
+
  
+**Beispiel:**
+Json Input
+```yaml
+{
+   "operation":"create",
+   "ean": "0401234567890",
+   "product_id": 1
+}
+
+```
+
+Json Output
+ ```yaml
+{
+   "result": "success"
+}
+```
+
+
+  ## EAN abfragen
+`POST /product_ean/scrape`
+
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/scrape)
+
+**Anfrage:** JSON mit `ean`
+
+- `ean`: 8- oder 13-stellige [EAN](https://de.wikipedia.org/wiki/European_Article_Number)
+
+**Antwort:** JSON `result`, `product_id`, `name`
+
+- `result`:  “success” or “error”
+ 
+**Beispiel:**
+Json Input
+```yaml
+{
+   "ean":"0401234567890"
+}
+```
+
+Json Output
+ ```yaml
+{
+   "result": "success",
+   "product_id": 1,
+   "name": "Milch"
+}
+```
+
+
+
 
