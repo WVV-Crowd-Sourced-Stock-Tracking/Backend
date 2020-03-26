@@ -6,6 +6,7 @@
 
   
 [Übermitteln des Bestands an einem Supermarkt](#übermitteln-neuer-bestandsinformationen-an-einen-supermarkt---deployed)
+
 [Supermärkte nach Standort (und Produkt) abfragen](#supermärkte-nach-standort-und-produkt-abfragen)
 
 [Abfrage aller Produktkategorien](#abfrage-aller-produktkategorien)
@@ -212,6 +213,8 @@ Json Output
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock)
 
 **Anfrage:** `market_id` (prio 1, optional wenn google_id), `google_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
+
+- Falls keine `product_id`-Liste übermittelt wird besteht die Rückgabe aus dem gesamten im Store bekannten Sortimentsbestand.
 
 **Antwort:** JSON Liste `product_id`, `product_name`, `quantity`
 
