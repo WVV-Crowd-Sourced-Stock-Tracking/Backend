@@ -267,7 +267,7 @@ public class Rest extends RestBasis {
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							
-							String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude from store s, location l "
+							String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude, s.icon_url from store s, location l "
 									+ "where s.store_id = ? and l.location_id=s.location_id";
 							PreparedStatement pstmt2 = null;
 							pstmt2 = con.prepareStatement( sql );
@@ -280,28 +280,27 @@ public class Rest extends RestBasis {
 								location.setStreet(rs.getString(3));
 								location.setLongitude(rs.getString(4));
 								location.setLatitude(rs.getString(5));
+								market.setIcon_url( rs.getString(6));
 							}
 							rs.close();
 							pstmt2.close();
 							
 							if (!(location.getZip()>500)) {
 								//get zip and address-info from API
-								location = apiGetLocation(market.getMaps_id(), location);
+								market = apiGetLocation(market.getMaps_id(), market);
 								location.setLongitude(objNode.findPath("longitude").asText());
 								location.setLatitude(objNode.findPath("latitude").asText());
 								
 								MarketManageRequest mmr = new MarketManageRequest();
-								market.setLocation(location);
-								
 								mmr.setOperation("modify");
 								mmr.setMarket_id(market.getMarket_id());
 								mmr.setMarket_name(market.getMarket_name());
-								mmr.setZip(Integer.toString(location.getZip()));
-								mmr.setLongitude(location.getLongitude());
-								mmr.setLatitude(location.getLatitude());
+								mmr.setZip(Integer.toString(market.getZip()));
+								mmr.setLongitude(objNode.findPath("longitude").asText());
+								mmr.setLatitude(objNode.findPath("latitude").asText());
 								mmr.setMaps_id(market.getMaps_id());
-								mmr.setStreet(location.getStreet());
-								mmr.setCity(location.getCity());
+								mmr.setStreet(market.getStreet());
+								mmr.setCity(market.getCity());
 								marketManageEdit(con, mmr);
 								market.setMarket_id( mmr.getMarket_id() );
 							}
@@ -311,20 +310,16 @@ public class Rest extends RestBasis {
 						} else {
 							// add market to db
 							MarketManageRequest mmr = new MarketManageRequest();
-							Location location = new Location();
-							location.setLongitude(objNode.findPath("longitude").asText());
-							location.setLatitude(objNode.findPath("latitude").asText());
-							location = apiGetLocation(market.getMaps_id(), location);
-							market.setLocation(location);
+							market = apiGetLocation(market.getMaps_id(), market);
 							
 							mmr.setOperation("create");
 							mmr.setMarket_name(market.getMarket_name());
-							mmr.setZip(Integer.toString(location.getZip()));
-							mmr.setLongitude(location.getLongitude());
-							mmr.setLatitude(location.getLatitude());
-							mmr.setStreet(location.getStreet());
+							mmr.setZip(Integer.toString(market.getZip()));
+							mmr.setLongitude(objNode.findPath("longitude").asText());
+							mmr.setLatitude(objNode.findPath("latitude").asText());
+							mmr.setStreet(market.getStreet());
 							mmr.setMaps_id(market.getMaps_id());
-							mmr.setCity(location.getCity());
+							mmr.setCity(market.getCity());
 							marketManageAdd( con, mmr );
 							market.setMarket_id( mmr.getMarket_id() );
 						}
@@ -403,19 +398,19 @@ public class Rest extends RestBasis {
 		return response;
 	}
 	
-	//TODO Google API fuer zip und AdressInfos
-	private Location apiGetLocation(String google_id, Location location) throws IOException {
+	//Google API fuer zip und AdressInfos
+	private SupermarketItem apiGetLocation(String google_id, SupermarketItem market) throws IOException {
 
 		JsonNode objNode = google_api.mapsApi.getPlaceDetails(google_id);
 		if (objNode != null) {
 			String street = objNode.path("route").asText() + " " + objNode.findPath("street_number").asText();
-			location.setStreet(street);
-			location.setCity(objNode.findPath("locality").asText());
-			location.setZip(objNode.findPath("postal_code").asInt());
+			market.setStreet(street);
+			market.setCity(objNode.findPath("locality").asText());
+			market.setZip(objNode.findPath("postal_code").asInt());
+			market.setIcon_url(objNode.findPath("icon").asText());
 		}				   
-		return location;   
+		return market;   
 	}
-	
 	
 	
 	private boolean marketIsInDb(Connection con, SupermarketItem market) {
@@ -784,13 +779,9 @@ public class Rest extends RestBasis {
 		GenericResponse res = new GenericResponse();
 		int locationId;
 
-		String sql = "INSERT INTO location (zip, city, street, longitude, latitude) VALUES (?, ?, ?, ?, ?) returning location_id";
-		// String sql = "INSERT INTO \"public\".\"location\" (\"zip\", \"city\",
-		// \"street\", \"longitude\", \"latitude\") VALUES ('61267', 'Neu-Anspach',
-		// 'TestStra�e', '123', '456') returning location_id;";
+		String sql = "INSERT INTO location (zip, city, street, longitude, latitude) VALUES (?, ?, ?, ?, ?)";
 		// TODO zip nicht in string
 		
-//TODO der MYSQL server kommt mit 	RETURN_GENERATED_KEYS nicht klar???	
 		PreparedStatement pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 		int zip = 0;
 		if ( !req.getZip().isEmpty() ) zip = Integer.valueOf(req.getZip());
@@ -803,12 +794,10 @@ public class Rest extends RestBasis {
 		ResultSet rs = pstmt.getGeneratedKeys();
 		rs.next();
 		locationId = rs.getInt(1);
-//		String data = rs.getString(1);
-//		locationId = Integer.parseInt(data);
 		rs.close();
 		pstmt.close();
 
-		sql = "INSERT INTO store (name, location_id, google_id, icon_url) VALUES (?, ?, ?, ?) returning store_id";
+		sql = "INSERT INTO store (name, location_id, google_id, icon_url) VALUES (?, ?, ?, ?)";
 		pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 		pstmt.setString(1, req.getMarket_name());
 		pstmt.setInt(2, locationId);
