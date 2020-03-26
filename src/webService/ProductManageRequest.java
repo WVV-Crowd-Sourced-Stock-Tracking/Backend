@@ -4,6 +4,7 @@ public class ProductManageRequest {
 	private String operation = "";
 	private int product_id = 0;
 	private String name = "";
+	private String emoji = "";
 	private String language = "";		//Maybe sometimes
 	public String getOperation() {
 		return operation;
@@ -28,6 +29,12 @@ public class ProductManageRequest {
 	}
 	public void setLanguage(String language) {
 		this.language = language;
+	}
+	public String getEmoji() {
+		return emoji;
+	}
+	public void setEmoji(String emoji) {
+		this.emoji = emoji;
 	}
 
 }

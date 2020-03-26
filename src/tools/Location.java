@@ -3,7 +3,7 @@ package tools;
 public class Location {
 	private String longitude;
 	private String latitude;
-	private int zip;
+	private String zip;
 	private String city;
 	private String street;
 	
@@ -19,10 +19,10 @@ public class Location {
 	public void setLatitude(String latitude) {
 		this.latitude = latitude;
 	}
-	public int getZip() {
+	public String getZip() {
 		return zip;
 	}
-	public void setZip(int zip) {
+	public void setZip(String zip) {
 		this.zip = zip;
 	}
 	public String getCity() {

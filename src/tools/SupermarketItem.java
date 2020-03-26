@@ -11,15 +11,15 @@ public class SupermarketItem {
 	private int market_id;
 	private String market_name;
 	private String city;
-	private int zip;
+	private String zip;
 	private String street;
 	private String longitude;
 	private String latitude;
 	private String distance = "";			//UoM is meter
 	private String maps_id = "";
-	private Boolean open = false;
 	private String icon_url = "";
-	private List<ProductAvailabilityItem> products = new ArrayList<ProductAvailabilityItem>();
+	private List<PeriodItem> periods = new ArrayList<PeriodItem>();
+	private List<MarketStockItem> products = new ArrayList<MarketStockItem>();
 
 	public int getMarket_id() {
 		return market_id;
@@ -71,19 +71,10 @@ public class SupermarketItem {
 	public void setMaps_id(String maps_id) {
 		this.maps_id = maps_id;
 	}
-	
-	
-	public Boolean getOpen() {
-		return open;
-	}
-	public void setOpen(Boolean open) {
-		this.open = open;
-	}
-	
-	public int getZip() {
+	public String getZip() {
 		return zip;
 	}
-	public void setZip(int zip) {
+	public void setZip(String zip) {
 		this.zip = zip;
 	}
 	public String getIcon_url() {
@@ -101,7 +92,7 @@ public class SupermarketItem {
 	 * @param longitude
 	 * @param latitude
 	 */
-	public SupermarketItem(int market_id, String market_name, String city, String street, String longitude, String latitude, String distance, String maps_id, Boolean open) {
+	public SupermarketItem(int market_id, String market_name, String city, String street, String longitude, String latitude, String distance, String maps_id) {
 		super();
 		this.market_id = market_id;
 		this.market_name = market_name;
@@ -111,15 +102,20 @@ public class SupermarketItem {
 		this.latitude = latitude;
 		this.distance = distance;
 		this.maps_id = maps_id;
-		this.open = open;
 	}
-	public List<ProductAvailabilityItem> getProducts() {
+	public List<MarketStockItem> getProducts() {
 		return products;
 	}
-	public void setProducts(List<ProductAvailabilityItem> products) {
+	public void setProducts(List<MarketStockItem> products) {
 		this.products = products;
 	}
 	
+	public List<PeriodItem> getPeriods() {
+		return periods;
+	}
+	public void setPeriods(List<PeriodItem> periods) {
+		this.periods = periods;
+	}
 	public void setLocation( Location location) {
 		longitude = location.getLongitude();
 		latitude = location.getLatitude();

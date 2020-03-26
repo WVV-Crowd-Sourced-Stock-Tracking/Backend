@@ -27,10 +27,12 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import tools.DayItem;
 import tools.GenericResponse;
 import tools.Location;
 import tools.MarketStockItem;
 import tools.MarketTransmitItem;
+import tools.PeriodItem;
 import tools.ProductItem;
 import tools.SupermarketItem;
 
@@ -244,8 +246,9 @@ public class Rest extends RestBasis {
 					supermarketItem.setLongitude(rsMarkets.getString("longitude"));
 					supermarketItem.setLatitude(rsMarkets.getString("latitude"));
 					supermarketItem.setStreet(rsMarkets.getString("street"));
-					supermarketItem.setZip(rsMarkets.getInt("zip"));
+					supermarketItem.setZip(rsMarkets.getString("zip"));
 					supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
+					supermarketItem.setPeriods( getPeriods( con, supermarketItem.getMarket_id() ) );
 					marketList.add(supermarketItem);					
 				}
 				res.setSupermarket(marketList);
@@ -263,7 +266,7 @@ public class Rest extends RestBasis {
 						market.setMarket_name(objNode.path("name").asText());
 						market.setMaps_id(objNode.path("id").asText());
 						market.setDistance(objNode.path("distance").asText());
-						market.setOpen(objNode.path("open_now").asBoolean());
+
 						if(marketIsInDb( con, market)) {
 							// load market from db
 							
@@ -275,7 +278,7 @@ public class Rest extends RestBasis {
 							ResultSet rs = pstmt2.executeQuery();
 							Location location = new Location();
 							if ( rs.next() ) {
-								location.setZip(rs.getInt(1));
+								location.setZip(rs.getString(1));
 								location.setCity(rs.getString(2));
 								location.setStreet(rs.getString(3));
 								location.setLongitude(rs.getString(4));
@@ -285,7 +288,7 @@ public class Rest extends RestBasis {
 							rs.close();
 							pstmt2.close();
 							
-							if (!(location.getZip()>500)) {
+							if (location.getZip().isEmpty()) {
 								//get zip and address-info from API
 								market = apiGetLocation(market.getMaps_id(), market);
 								location.setLongitude(objNode.findPath("longitude").asText());
@@ -295,7 +298,7 @@ public class Rest extends RestBasis {
 								mmr.setOperation("modify");
 								mmr.setMarket_id(market.getMarket_id());
 								mmr.setMarket_name(market.getMarket_name());
-								mmr.setZip(Integer.toString(market.getZip()));
+								mmr.setZip(market.getZip());
 								mmr.setLongitude(objNode.findPath("longitude").asText());
 								mmr.setLatitude(objNode.findPath("latitude").asText());
 								mmr.setMaps_id(market.getMaps_id());
@@ -306,6 +309,7 @@ public class Rest extends RestBasis {
 							}
 							
 							market.setLocation(location);
+							market.setPeriods( getPeriods( con, market.getMarket_id() ) );
 							
 						} else {
 							// add market to db
@@ -314,7 +318,7 @@ public class Rest extends RestBasis {
 							
 							mmr.setOperation("create");
 							mmr.setMarket_name(market.getMarket_name());
-							mmr.setZip(Integer.toString(market.getZip()));
+							mmr.setZip(market.getZip());
 							mmr.setLongitude(objNode.findPath("longitude").asText());
 							mmr.setLatitude(objNode.findPath("latitude").asText());
 							mmr.setStreet(market.getStreet());
@@ -322,8 +326,10 @@ public class Rest extends RestBasis {
 							mmr.setCity(market.getCity());
 							marketManageAdd( con, mmr );
 							market.setMarket_id( mmr.getMarket_id() );
+//TODO add periods to db							
 						}
 						
+						market.setPeriods( getPeriods( con, market.getMarket_id() ) );
 						marketList.add(market);						
 					}
 				}				
@@ -354,24 +360,24 @@ public class Rest extends RestBasis {
 				
 				//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
 				SupermarketItem currMarket;
-				List<List<tools.ProductAvailabilityItem>> productsInMarkets = new ArrayList<List<tools.ProductAvailabilityItem>>();
+				List<List<MarketStockItem>> productsInMarkets = new ArrayList<List<MarketStockItem>>();
 				Iterator<SupermarketItem> marketIterator = marketList.iterator();
-				List<tools.ProductAvailabilityItem> singleMarketProducts = null;
+				List<MarketStockItem> singleMarketProducts = null;
 				
 				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
 				
 				while (marketIterator.hasNext()) {
 					currMarket = marketIterator.next();
-					singleMarketProducts = new ArrayList<tools.ProductAvailabilityItem>();
+					singleMarketProducts = new ArrayList<MarketStockItem>();
 					//Create ProductID-String for sql query
 					PreparedStatement pstmt = null;
-					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
+					pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity, p.emoji from product p, stock s where p.product_id=s.product_id and s.store_id=? " + sqlFilter + " order by s.quantity desc");
 					pstmt.setInt(1, currMarket.getMarket_id());
 					rsProducts = pstmt.executeQuery();
 					
 					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
 					while( rsProducts.next() ) {
-						tools.ProductAvailabilityItem jsonProductItem = new tools.ProductAvailabilityItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
+						MarketStockItem jsonProductItem = new MarketStockItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3),rsProducts.getString(4));
 						singleMarketProducts.add(jsonProductItem);
 					}
 					rsProducts.close();
@@ -380,7 +386,7 @@ public class Rest extends RestBasis {
 					productsInMarkets.add(singleMarketProducts);		
 				} 
 				
-				res.setProductItems(productsInMarkets);
+				res.setProducts(productsInMarkets);
 			}	
 			res.setResult("success");
 		}
@@ -406,7 +412,7 @@ public class Rest extends RestBasis {
 			String street = objNode.path("route").asText() + " " + objNode.findPath("street_number").asText();
 			market.setStreet(street);
 			market.setCity(objNode.findPath("locality").asText());
-			market.setZip(objNode.findPath("postal_code").asInt());
+			market.setZip(objNode.findPath("postal_code").asText());
 			market.setIcon_url(objNode.findPath("icon").asText());
 		}				   
 		return market;   
@@ -497,21 +503,22 @@ public class Rest extends RestBasis {
 				supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
 				supermarketItem.setCity(rsMarkets.getString("city"));
 				supermarketItem.setStreet(rsMarkets.getString("street"));
-				supermarketItem.setZip(rsMarkets.getInt("zip"));
+				supermarketItem.setZip(rsMarkets.getString("zip"));
 				supermarketItem.setLongitude(rsMarkets.getString("longitude"));
 				supermarketItem.setLatitude(rsMarkets.getString("latitude"));
 				supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
+				supermarketItem.setPeriods( getPeriods( con, supermarketItem.getMarket_id() ) );
 			}
 			pstmt.close();
 			rsMarkets.close();
 			
 			//Create ProductID-String for sql query
-			pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity from product p, stock s where p.product_id=s.product_id and s.store_id=? order by s.quantity desc");
+			pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity, p.emoji from product p, stock s where p.product_id=s.product_id and s.store_id=? order by s.quantity desc");
 			pstmt.setInt(1, supermarketItem.getMarket_id());
 			rsProducts = pstmt.executeQuery();
 				
 			while( rsProducts.next() ) {
-				tools.ProductAvailabilityItem jsonProductItem = new tools.ProductAvailabilityItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3));
+				MarketStockItem jsonProductItem = new MarketStockItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3),rsProducts.getString(4));
 				supermarketItem.getProducts().add(jsonProductItem);
 			}
 			rsProducts.close();
@@ -583,30 +590,34 @@ public class Rest extends RestBasis {
 		try {
 			con = initWS();
 			String sql = "";
+			String prod = "";
+			for ( Integer p :req.getProduct_id() ) {
+				if ( !prod.isEmpty() ) prod += String.format(",%d", p );
+				else prod = String.format("%d", p );
+			}
 			PreparedStatement pstmt = null;
 			if ( req.getMarket_id() > 0 ) {
-				sql = "select s.product_id,p.name,s.quantity from stock s, product p " +
-					 "where s.store_id=? and s.product_id in(?) and s.product_id=p.product_id " +
-					 "order by p.name";
+				sql = "select s.product_id,p.name,s.quantity,p.emoji from stock s, product p where " +
+					  "s.store_id=? ";
+				if ( !prod.isEmpty() ) sql += "and s.product_id in(" + prod + ") ";
+				sql += "and s.product_id=p.product_id order by p.name";
 				pstmt = con.prepareStatement( sql );
 				pstmt.setInt(1, req.getMarket_id());
 			}
 			else if ( !req.getMaps_id().isEmpty() ) { 
-				sql = "select s.product_id,p.name,s.quantity from store m, stock s, product p " +
-						 "where m.google_id=? and s.product_id in(?) and m.store_id=s.store_id and s.product_id=p.product_id " +
-						 "order by p.name";
+				sql = "select s.product_id,p.name,s.quantity,p.emoji from store m, stock s, product p " +
+					  "where m.google_id=? ";
+				if ( !prod.isEmpty() ) sql += "and s.product_id in(" + prod + ") ";
+				sql += "and m.store_id=s.store_id and s.product_id=p.product_id order by p.name";
 				pstmt = con.prepareStatement( sql );
 				pstmt.setString(1, req.getMaps_id());
 			}
 			if ( pstmt != null ) {
-				for ( Integer p :req.getProduct_id() ) {
-					pstmt.setInt(2, p.intValue() );
-					ResultSet rs = pstmt.executeQuery();
-					while( rs.next() ) {
-						res.getProduct().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3) ));
-					}
-					rs.close();
+				ResultSet rs = pstmt.executeQuery();
+				while( rs.next() ) {
+					res.getProducts().add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4) ));
 				}
+				rs.close();
 				pstmt.close();
 				res.setResult("success");
 			}
@@ -749,7 +760,7 @@ public class Rest extends RestBasis {
 		sql = "UPDATE location SET zip = ?, city = ?, street = ?, longitude = ?, latitude = ?, icon_url = ? WHERE location_id = ?";
 		
 		pstmt = con.prepareStatement(sql);
-		pstmt.setInt(1, Integer.valueOf(req.getZip()));
+		pstmt.setString(1, req.getZip());
 		pstmt.setString(2, req.getCity());
 		pstmt.setString(3, req.getStreet());
 		pstmt.setString(4, req.getLongitude());
@@ -780,12 +791,9 @@ public class Rest extends RestBasis {
 		int locationId;
 
 		String sql = "INSERT INTO location (zip, city, street, longitude, latitude) VALUES (?, ?, ?, ?, ?)";
-		// TODO zip nicht in string
 		
 		PreparedStatement pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
-		int zip = 0;
-		if ( !req.getZip().isEmpty() ) zip = Integer.valueOf(req.getZip());
-		pstmt.setInt(1, zip );
+		pstmt.setString(1, req.getZip() );
 		pstmt.setString(2, req.getCity());
 		pstmt.setString(3, req.getStreet());
 		pstmt.setString(4, req.getLongitude());
@@ -855,11 +863,11 @@ public class Rest extends RestBasis {
 		try {
 			con = initWS();
 
-			String sql = "select product_id,name from product order by name";
+			String sql = "select product_id,name,emoji from product order by name";
 			PreparedStatement pstmt = con.prepareStatement( sql );
 			ResultSet rs = pstmt.executeQuery();
 			while( rs.next() ) {
-				res.getProduct().add( new ProductItem( rs.getInt(1), rs.getString(2)) );
+				res.getProduct().add( new ProductItem( rs.getInt(1), rs.getString(2), rs.getString(3)) );
 			}
 			rs.close();
 			pstmt.close();		
@@ -919,14 +927,16 @@ public class Rest extends RestBasis {
 			PreparedStatement pstmt = null;
 
 			if (req.getOperation().equals("create")) {
-				pstmt = con.prepareStatement("insert into product (name) VALUES (?)");
+				pstmt = con.prepareStatement("insert into product (name,emoji) VALUES (?,?)");
 				pstmt.setString(1, req.getName());
+				pstmt.setString(2, req.getEmoji());
 			}
 
 			else if (req.getOperation().equals("update")) {
-				pstmt = con.prepareStatement("UPDATE product SET name = ? WHERE product_id = ?");
+				pstmt = con.prepareStatement("UPDATE product SET name = ?, emoji = ? WHERE product_id = ?");
 				pstmt.setString(1, req.getName());
-				pstmt.setInt(2, req.getProduct_id());
+				pstmt.setString(2, req.getEmoji());
+				pstmt.setInt(3, req.getProduct_id());
 			}
 
 			else if (req.getOperation().equals("delete")) {
@@ -1217,7 +1227,7 @@ public class Rest extends RestBasis {
 		HelloResponse res = new HelloResponse();
 		try {
 			con = initWS();
-//TODO just for testing			
+// just for testing			
 			findMarkets( con, 50.363509, 8.751548, 500 );
 
 			res.setText( "HelloWorld " + req.getZahl());
@@ -1295,7 +1305,7 @@ public class Rest extends RestBasis {
 				System.out.println(rs.getString(5));
 
 				SupermarketItem item = new SupermarketItem();
-	//TODO			item.setZip(rs.getInt(1));
+				item.setZip(rs.getString(1));
 				item.setCity(rs.getString(2));
 				item.setStreet(rs.getString(3));
 				item.setLongitude(rs.getString(4));
@@ -1363,4 +1373,112 @@ public class Rest extends RestBasis {
 		double dist = 6378388.0 * Math.acos(Math.sin(lat1*Math.PI/180) * Math.sin(lat2*Math.PI/180) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.cos(lng2*Math.PI/180 - lng1*Math.PI/180));
 		return (int) dist;
 	}
+	
+	private List<PeriodItem> getPeriods( Connection con, int store_id ) {
+		List<PeriodItem> list = new ArrayList<PeriodItem>();
+		PreparedStatement pstmt = null;
+		String sql = "select d1.name, d1.name_short close_day_id, close_time, d2.name, d2.name_short, open_day_id, open_time from periods p" +
+					 "left outer join day d1 on p.close_day_id=d1.day_id " +
+					 "left outer join day d2 on p.open_day_id=d2.day_id " +
+					 "where store_id=? order by p.periode_id";
+		try {
+			pstmt = con.prepareStatement( sql );
+			pstmt.setInt(1, store_id);
+			ResultSet rs = pstmt.executeQuery();
+			while ( rs.next() ) {
+				PeriodItem item = new PeriodItem();
+				item.setClose_name(rs.getString(1));
+				item.setClose_name_short(rs.getString(2));
+				item.setClose_day_id(rs.getInt(3));
+				item.setClose_time(formatTime(rs.getString(4)));
+				item.setOpen_name(rs.getString(1));
+				item.setOpen_name_short(rs.getString(2));
+				item.setOpen_day_id(rs.getInt(3));
+				item.setOpen_time(formatTime(rs.getString(4)));
+				list.add(item);
+			}
+			rs.close();
+			pstmt.close();
+		}
+		catch( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Convert hhmm to hh:mm
+	 * @param t
+	 * @return
+	 */
+	private String formatTime( String t ) {
+		String ret = t;
+		if ( t.length() == 4 ) {
+			ret = t.substring(0,2) + ":" + t.substring(3);
+		}
+		return ret; 
+	}
+	
+	
+	@POST
+	@Path("/day/scrape")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response dayScrape(@Context HttpServletRequest request, DayRequest req) {
+		Response response = null;
+		Connection con = null;
+		DayResponse res = new DayResponse();
+		try {
+			con = initWS();
+
+			String sql = "select day_id,name,name_short from day order by day_id";
+			PreparedStatement pstmt = con.prepareStatement( sql );
+			ResultSet rs = pstmt.executeQuery();
+			while( rs.next() ) {
+				res.getDays().add( new DayItem( rs.getInt(1), rs.getString(2), rs.getString(3)) );
+			}
+			rs.close();
+			pstmt.close();		
+			con.commit();
+			res.setResult("success");
+		}
+		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+			}
+			res.setResult( "Exception " + ex.getMessage() );
+		}
+		finally {
+			finallyWs( con );
+			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+		}
+		return response;
+	}
+
+	@HEAD
+	@Path("/day/scrape")
+	public Response dayScrapeHead(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.build();
+	      return response;
+	}
+	
+	@OPTIONS
+	@Path("/day/scrape")
+	public Response dayScrapeOptions(@QueryParam("param1") String param1) {
+	      Response response = Response.ok("this body will be ignored")
+	  				.header("Access-Control-Allow-Origin", "*")
+	  				.header("Access-Control-Allow-Method", "POST")
+	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
+	  				.header("Access-Control-Max-Age", "86400")
+	  				.build();
+	      return response;
+	}
+
 }

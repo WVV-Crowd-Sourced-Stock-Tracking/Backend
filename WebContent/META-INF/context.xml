@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
 <Context cookies="false">
-
+<!-- 
 	<Resource name="jdbc/wvv"
               global="jdbc/wvv"
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
@@ -37,7 +37,7 @@
               defaultAutoCommit="false"
            	  validationQuery="SELECT 1"
               testOnBorrow="true"/>
-              
+ -->             
 	<Resource name="jdbc/wvv2" 
 				global="jdbc/wvv" 
 				factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" 
@@ -50,7 +50,7 @@
 				url="jdbc:mysql://s217.goserver.host:3306/web157_db2" 
 				ssl="true" 
 				maxActive="10" 
-				maxIdle="5" 
+				maxIdle="2" 
 				maxWaitMillis="10000" 
 				removeAbandonedTimeout="300" 
 				defaultAutoCommit="false"
