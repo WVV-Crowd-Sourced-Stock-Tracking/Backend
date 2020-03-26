@@ -34,7 +34,7 @@
 ## Übermitteln neuer Bestandsinformationen an einen Supermarkt
 
 `POST /market/transmit`
-**[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/transmit](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/transmit)**
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/transmit](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/transmit)
 
 **Anfrage:**  2 Möglichkeiten
 1. JSON mit `market_id`, `product_id`, `quantity` (0 (wenig) - 100 (viel))
@@ -74,7 +74,8 @@ Json Output
 ## Supermärkte nach Standort (und Produkt) abfragen
 
 `POST /market/scrape`
-**[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/scrape)**
+
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/scrape)
 
 **Anfrage:** JSON mit attr `zip` und/oder `gps_length, gps_width`, `radius` (in Meter, optional), JSON Liste von `product_id` (optional), `details_requested` (*deprecated* durch `/market/details`)
 
@@ -135,7 +136,9 @@ Json Output
 
 ## Abfrage aller Produktkategorien
 `POST /product/scrape`
+
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/product/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/product/scrape)
+
 Liefert eine Liste aller verfügbaren Produktkategorien zurück.
 
 **Anfrage:** 
@@ -210,6 +213,7 @@ Json Output
 
   ## Bestandsabfrage von Markt
 `POST /market/stock`
+
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock)
 
 **Anfrage:** `market_id` (prio 1, optional wenn google_id), `google_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
@@ -251,7 +255,8 @@ Json Output
 
  ## Supermarkt anlegen, ändern, löschen
 `POST /market/manage`
-URL: [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage)
+
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage)
 
 **Anfrage:** JSON operation(“create”, “modify”, “delete”), market_id, name, city, zip, street, gps_length, gps_width
 
@@ -300,6 +305,7 @@ Json Output
 
 ## Produktkategorie anlegen, ändern, löschen
 `POST /product/manage`
+
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/product/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/product/mamage)
 
 **Anfrage:** `operation`, `product_id`, `name`
