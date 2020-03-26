@@ -4,30 +4,74 @@
 
 # Endpoints: REST-API
 
-  
-[Übermitteln des Bestands an einem Supermarkt](#übermitteln-neuer-bestandsinformationen-an-einen-supermarkt---deployed)
+### Supermarkt
+
+[Bestandsabfrage eines Marktes](#bestandsabfrage-von-markt)
+
+[Übermitteln neuer Bestandsinformationen an einem Supermarkt](#übermitteln-neuer-bestandsinformationen-an-einen-supermarkt)
 
 [Supermärkte nach Standort (und Produkt) abfragen](#supermärkte-nach-standort-und-produkt-abfragen)
 
-[Abfrage aller Produktkategorien](#abfrage-aller-produktkategorien)
-
-[Market Details abfragen](#market-details-abfragen)
-
-[Bestandsabfrage(google id wird noch hinzugefügt)](#bestandsabfrage-von-markt)
+[Markt Details abfragen](#markt-details-abfragen)
 
 [Supermarkt anlegen, ändern, löschen](#supermarkt-anlegen-ändern-löschen)
 
+### Produkte
+
+[Abfrage aller Produktkategorien](#abfrage-aller-produktkategorien)
+
 [Produktkategorie anlegen, ändern, löschen](#produktkategorie-anlegen-ändern-löschen)
 
-[EAN anlegen](#ean-anlegen)
+### EAN
 
 [EAN abfragen](#ean-abfragen)
 
+[EAN anlegen](#ean-anlegen)
 
+---
+---
 
+## Bestandsabfrage von Markt
+`POST /market/stock`
 
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock)
 
+**Anfrage:** `market_id` (prio 1, optional wenn google_id), `google_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
 
+- Falls keine `product_id`-Liste übermittelt wird besteht die Rückgabe aus dem gesamten im Store bekannten Sortimentsbestand.
+
+**Antwort:** JSON Liste `product_id`, `product_name`, `quantity`
+
+ 
+**Beispiel:**
+Json Input 1
+```yaml
+{
+"market_id": 1,
+"product_id":  [1, 2]
+}
+```
+Json Input 2
+```yaml
+{
+"google_id": “GOOGLE_DATA”,
+"product_id":  [1, 2]
+}
+
+```
+
+Json Output
+ ```yaml
+{
+   "result": "success",
+   "product": [ {
+      "product_id": 1,
+      "product_name": "test",
+      "quantity": 50
+   }
+   ]
+}
+```
 
 ## Übermitteln neuer Bestandsinformationen an einen Supermarkt
 
@@ -66,8 +110,6 @@ Json Output
 "result": "success"
 }
 ```
-
-  
 
 ## Supermärkte nach Standort (und Produkt) abfragen
 
@@ -130,38 +172,8 @@ Json Output
 	{...weiterer Supermarkt und Bestandsinformationen...}
 ]
 ```
-  
 
-## Abfrage aller Produktkategorien
-`POST /product/scrape`
-
-[https://wvvcrowdmarket.herokuapp.com/ws/rest/product/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/product/scrape)
-
-Liefert eine Liste aller verfügbaren Produktkategorien zurück.
-
-**Anfrage:** 
-
-**Antwort:** JSON Liste mit Elementen bestehend aus `product_id`, `name`
-
- 
-**Beispiel:**
-Json Input
-```yaml
-{}
-```
-
-Json Output
- ```yaml
-{
-	"result": "success",
-	"product": [ 
-	   {"product_id": 1, "product_name": "Milch"},
-	   {"product_id": 3, "product_name": "Kartoffeln"}
-	   ]
-}
-```
-
- ## Market Details abfragen
+## Markt Details abfragen
 `POST /market/details`
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/details](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/details)
 
@@ -207,52 +219,9 @@ Json Output
 	      ]
 	}
 }
-```  
+``` 
 
-  ## Bestandsabfrage von Markt
-`POST /market/stock`
-
-[https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock)
-
-**Anfrage:** `market_id` (prio 1, optional wenn google_id), `google_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
-
-- Falls keine `product_id`-Liste übermittelt wird besteht die Rückgabe aus dem gesamten im Store bekannten Sortimentsbestand.
-
-**Antwort:** JSON Liste `product_id`, `product_name`, `quantity`
-
- 
-**Beispiel:**
-Json Input 1
-```yaml
-{
-"market_id": 1,
-"product_id":  [1, 2]
-}
-```
-Json Input 2
-```yaml
-{
-"google_id": “GOOGLE_DATA”,
-"product_id":  [1, 2]
-}
-
-```
-
-Json Output
- ```yaml
-{
-   "result": "success",
-   "product": [ {
-      "product_id": 1,
-      "product_name": "test",
-      "quantity": 50
-   }
-   ]
-}
-```
-
-
- ## Supermarkt anlegen, ändern, löschen
+## Supermarkt anlegen, ändern, löschen
 `POST /market/manage`
 
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage)
@@ -300,6 +269,35 @@ Json Output
 {
    "result": "success"
 }
+```  
+
+## Abfrage aller Produktkategorien
+`POST /product/scrape`
+
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/product/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/product/scrape)
+
+Liefert eine Liste aller verfügbaren Produktkategorien zurück.
+
+**Anfrage:** 
+
+**Antwort:** JSON Liste mit Elementen bestehend aus `product_id`, `name`
+
+ 
+**Beispiel:**
+Json Input
+```yaml
+{}
+```
+
+Json Output
+ ```yaml
+{
+	"result": "success",
+	"product": [ 
+	   {"product_id": 1, "product_name": "Milch"},
+	   {"product_id": 3, "product_name": "Kartoffeln"}
+	   ]
+}
 ```
 
 ## Produktkategorie anlegen, ändern, löschen
@@ -336,8 +334,38 @@ Json Output
 }
 ```
 
+## EAN abfragen
+`POST /product_ean/scrape`
 
-  ## EAN anlegen
+[https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/scrape)
+
+**Anfrage:** JSON mit `ean`
+
+- `ean`: 8- oder 13-stellige [EAN](https://de.wikipedia.org/wiki/European_Article_Number)
+
+**Antwort:** JSON `result`, `product_id`, `name`
+
+- `result`:  “success” or “error”
+ 
+**Beispiel:**
+Json Input
+```yaml
+{
+   "ean":"0401234567890"
+}
+```
+
+Json Output
+ ```yaml
+{
+   "result": "success",
+   "product_id": 1,
+   "name": "Milch"
+}
+```
+
+
+## EAN anlegen
 `POST /product_ean/manage`
 
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/manage)
@@ -372,35 +400,6 @@ Json Output
 ```
 
 
-  ## EAN abfragen
-`POST /product_ean/scrape`
-
-[https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/product_ean/scrape)
-
-**Anfrage:** JSON mit `ean`
-
-- `ean`: 8- oder 13-stellige [EAN](https://de.wikipedia.org/wiki/European_Article_Number)
-
-**Antwort:** JSON `result`, `product_id`, `name`
-
-- `result`:  “success” or “error”
- 
-**Beispiel:**
-Json Input
-```yaml
-{
-   "ean":"0401234567890"
-}
-```
-
-Json Output
- ```yaml
-{
-   "result": "success",
-   "product_id": 1,
-   "name": "Milch"
-}
-```
 
 
 
