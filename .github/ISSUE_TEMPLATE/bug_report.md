@@ -20,7 +20,7 @@ insert headers here
 ```
 - Request Body:
 ```json
-insert body here
+insert json body here
 ```
 
 **Expected behavior**
@@ -30,7 +30,7 @@ What should the endpoint return?
 What _does_ the endpoint return?
 
 ```json
-
+insert json response here
 ``` 
 
 **Backend Version**
