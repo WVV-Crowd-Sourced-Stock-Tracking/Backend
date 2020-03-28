@@ -1,5 +1,11 @@
 package webService;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import tools.PeriodItem;
+import tools.SupermarketItem;
+
 public class MarketManageRequest {
 	private String operation = "";
 	private int market_id = 0;
@@ -11,6 +17,20 @@ public class MarketManageRequest {
 	private String latitude = "";
 	private String maps_id = "";
 	private String icon_url = "";
+	private List<PeriodItem> periods = new ArrayList<PeriodItem>();
+	
+	public void setEverythingButOperation(SupermarketItem market) {
+		setMarket_id(market.getMarket_id());
+		setMarket_name(market.getMarket_name());
+		setZip(market.getZip());
+		setLongitude(market.getLongitude());
+		setLatitude(market.getLatitude());
+		setMaps_id(market.getMaps_id());
+		setStreet(market.getStreet());
+		setCity(market.getCity());
+		setPeriods(market.getPeriods());
+		setIcon_url(market.getIcon_url());
+	}
 	
 	public String getOperation() {
 		return operation;
@@ -71,5 +91,11 @@ public class MarketManageRequest {
 	}
 	public void setIcon_url(String icon_url) {
 		this.icon_url = icon_url;
+	}
+	public List<PeriodItem> getPeriods(){
+		return periods;
+	}
+	public void setPeriods(List<PeriodItem> periods) {
+		this.periods = periods;
 	}
 }

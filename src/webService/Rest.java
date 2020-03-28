@@ -214,7 +214,7 @@ public class Rest extends RestBasis {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response marketScrape(@Context HttpServletRequest request, MarketScrapeRequest req) {
 		Response response = null;
-		Connection con = null;
+		Connection con = null;		
 		MarketScrapeResponse res = new MarketScrapeResponse();
 		try {
 			con = initWS();
@@ -262,74 +262,53 @@ public class Rest extends RestBasis {
 				 
 				if (actualObj != null) {
 					for(final JsonNode objNode : actualObj) {
+						String maps_id = objNode.path("id").asText();
 						SupermarketItem market = new SupermarketItem();
-						market.setMarket_name(objNode.path("name").asText());
+						String market_name = objNode.path("name").asText();
+						market.setMarket_name(market_name);
 						market.setMaps_id(objNode.path("id").asText());
-						market.setDistance(objNode.path("distance").asText());
+						String distance = objNode.path("distance").asText();
+						market.setDistance(distance);
 
 						if(marketIsInDb( con, market)) {
 							// load market from db
+							SupermarketItem marketDB = getMarketFromDB(con, market.getMarket_id());
 							
-							String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude, s.icon_url from store s, location l "
-									+ "where s.store_id = ? and l.location_id=s.location_id";
-							PreparedStatement pstmt2 = null;
-							pstmt2 = con.prepareStatement( sql );
-							pstmt2.setInt(1, market.getMarket_id());
-							ResultSet rs = pstmt2.executeQuery();
-							Location location = new Location();
-							if ( rs.next() ) {
-								location.setZip(rs.getString(1));
-								location.setCity(rs.getString(2));
-								location.setStreet(rs.getString(3));
-								location.setLongitude(rs.getString(4));
-								location.setLatitude(rs.getString(5));
-								market.setIcon_url( rs.getString(6));
-							}
-							rs.close();
-							pstmt2.close();
-							
-							if (location.getZip().isEmpty()) {
+							if (anyMarketInformationMissing(marketDB)) {
+								//UPDATE Market information
 								//get zip and address-info from API
-								market = apiGetLocation(market.getMaps_id(), market);
-								location.setLongitude(objNode.findPath("longitude").asText());
-								location.setLatitude(objNode.findPath("latitude").asText());
+								market = google_api.mapsApi.getPlaceDetails(maps_id);
+								market.setDistance(distance);
+								market.setMarket_id(marketDB.getMarket_id());
+								market.setMarket_name(marketDB.getMarket_name());
+								market.setLongitude(objNode.findPath("longitude").asText());
+								market.setLatitude(objNode.findPath("latitude").asText());
 								
 								MarketManageRequest mmr = new MarketManageRequest();
 								mmr.setOperation("modify");
-								mmr.setMarket_id(market.getMarket_id());
-								mmr.setMarket_name(market.getMarket_name());
-								mmr.setZip(market.getZip());
-								mmr.setLongitude(objNode.findPath("longitude").asText());
-								mmr.setLatitude(objNode.findPath("latitude").asText());
-								mmr.setMaps_id(market.getMaps_id());
-								mmr.setStreet(market.getStreet());
-								mmr.setCity(market.getCity());
+								mmr.setEverythingButOperation(market);
 								marketManageEdit(con, mmr);
+								
 								market.setMarket_id( mmr.getMarket_id() );
 							}
 							
-							market.setLocation(location);
-							market.setPeriods( getPeriods( con, market.getMarket_id() ) );
-							
 						} else {
 							// add market to db
-							MarketManageRequest mmr = new MarketManageRequest();
-							market = apiGetLocation(market.getMaps_id(), market);
+							market = google_api.mapsApi.getPlaceDetails(maps_id);
+							market.setDistance(distance);
+							market.setMarket_name(market_name);							
+							market.setLongitude(objNode.findPath("longitude").asText());
+							market.setLatitude(objNode.findPath("latitude").asText());
 							
+							MarketManageRequest mmr = new MarketManageRequest();
 							mmr.setOperation("create");
-							mmr.setMarket_name(market.getMarket_name());
-							mmr.setZip(market.getZip());
-							mmr.setLongitude(objNode.findPath("longitude").asText());
-							mmr.setLatitude(objNode.findPath("latitude").asText());
-							mmr.setStreet(market.getStreet());
-							mmr.setMaps_id(market.getMaps_id());
-							mmr.setCity(market.getCity());
+							mmr.setEverythingButOperation(market);
 							marketManageAdd( con, mmr );
-							market.setMarket_id( mmr.getMarket_id() );
-//TODO add periods to db							
+							
+							market.setMarket_id( mmr.getMarket_id() );							
 						}
 						
-						market.setPeriods( getPeriods( con, market.getMarket_id() ) );
+						market.setPeriods(getPeriods( con, market.getMarket_id() ) );
 						marketList.add(market);						
 					}
 				}				
@@ -358,13 +337,13 @@ public class Rest extends RestBasis {
 					sqlFilter = "";
 				}
 				
-				//TODO alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
+				//alle Produkte(entsprechend der Filterung oder ohne Filterung) der Supermï¿½rkte aus Datenbank suchen und zurueckgeben
 				SupermarketItem currMarket;
 				List<List<MarketStockItem>> productsInMarkets = new ArrayList<List<MarketStockItem>>();
 				Iterator<SupermarketItem> marketIterator = marketList.iterator();
 				List<MarketStockItem> singleMarketProducts = null;
 				
-				//TODO - Fuelle singleMarketProducts-Liste mit den angefragten Produkten
+				//Fuelle singleMarketProducts-Liste mit den angefragten Produkten
 				
 				while (marketIterator.hasNext()) {
 					currMarket = marketIterator.next();
@@ -375,7 +354,7 @@ public class Rest extends RestBasis {
 					pstmt.setInt(1, currMarket.getMarket_id());
 					rsProducts = pstmt.executeQuery();
 					
-					//TODO einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
+					//einzele Auslese in singleMarketProduts-Liste packen und anschließend diese in productsInMarket-Liste
 					while( rsProducts.next() ) {
 						MarketStockItem jsonProductItem = new MarketStockItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3),rsProducts.getString(4));
 						singleMarketProducts.add(jsonProductItem);
@@ -402,54 +381,6 @@ public class Rest extends RestBasis {
 			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
 		}
 		return response;
-	}
-	
-	//Google API fuer zip und AdressInfos
-	private SupermarketItem apiGetLocation(String google_id, SupermarketItem market) throws IOException {
-
-		JsonNode objNode = google_api.mapsApi.getPlaceDetails(google_id);
-		if (objNode != null) {
-			String street = objNode.path("route").asText() + " " + objNode.findPath("street_number").asText();
-			market.setStreet(street);
-			market.setCity(objNode.findPath("locality").asText());
-			market.setZip(objNode.findPath("postal_code").asText());
-			market.setIcon_url(objNode.findPath("icon").asText());
-		}				   
-		return market;   
-	}
-	
-	
-	private boolean marketIsInDb(Connection con, SupermarketItem market) {
-		try {
-			String sql = "";
-			PreparedStatement pstmt = null;
-				sql = "select store.store_id from store "
-					+ "where store.google_id = ?";
-				pstmt = con.prepareStatement( sql );
-				pstmt.setString(1, market.getMaps_id());
-				
-				ResultSet rs = pstmt.executeQuery();
-				int count = 0;
-				int storeId = 0;
-				while(rs.next()) {
-					storeId = rs.getInt("store_id");
-					count++;
-				}
-				market.setMarket_id(storeId);
-				
-				rs.close();
-				pstmt.close();
-				
-				return count >= 1;
-		}
-		catch ( Exception ex) {
-			try {
-				con.rollback();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return false;
 	}
 
 	@HEAD
@@ -703,30 +634,52 @@ public class Rest extends RestBasis {
 		return response;
 	}
 	
+	
+	//TODO test delete Periods
 	private GenericResponse marketManageDelete(Connection con, MarketManageRequest req) throws Exception {
 		GenericResponse res = new GenericResponse();
+		
+		//delete Periods first
+		String sql = "DELETE FROM periods WHERE store_id = ?";
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());
+		pstmt.executeUpdate();		
+		pstmt.close();
+		
 		int locationId;
 		// get location id
-		String sql = "Select location_id from store where store_id = ?";
-		PreparedStatement pstmt = con.prepareStatement(sql);
+		sql = "Select location_id from store where store_id = ?";
+		pstmt = con.prepareStatement(sql);
 		pstmt.setInt(1, req.getMarket_id());
 		
 		ResultSet rs = pstmt.executeQuery();
 		rs.next();
 		locationId = rs.getInt("location_id");
-		
 		rs.close();
 		pstmt.close();
 
-		// delete store first
-		sql = "DELETE FROM store WHERE store_id = ?";
-		
+		//delete stock_history
+		sql = "DELETE FROM stock_history WHERE store_id = ?";
 		pstmt = con.prepareStatement(sql);
 		pstmt.setInt(1, req.getMarket_id());
-
+		pstmt.executeUpdate();
+		pstmt.close();
+		
+		//delete stock
+		sql = "DELETE FROM stock WHERE store_id = ?";
+		pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());
+		pstmt.executeUpdate();
+		pstmt.close();
+		
+		// delete store before location
+		sql = "DELETE FROM store WHERE store_id = ?";
+		pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());
 		pstmt.executeUpdate();
 		pstmt.close();
 
+		//delete location last
 		sql = "DELETE FROM location WHERE location_id = ?";
 		pstmt = con.prepareStatement(sql);
 		pstmt.setInt(1, locationId);
@@ -741,6 +694,7 @@ public class Rest extends RestBasis {
 		return res;
 	}
 	
+	//TODO Läuft
 	private GenericResponse marketManageEdit(Connection con, MarketManageRequest req) throws Exception {
 		GenericResponse res = new GenericResponse();
 		int locationId;
@@ -757,7 +711,7 @@ public class Rest extends RestBasis {
 		pstmt.close();
 
 		// update location
-		sql = "UPDATE location SET zip = ?, city = ?, street = ?, longitude = ?, latitude = ?, icon_url = ? WHERE location_id = ?";
+		sql = "UPDATE location SET zip = ?, city = ?, street = ?, longitude = ?, latitude = ? WHERE location_id = ?";
 		
 		pstmt = con.prepareStatement(sql);
 		pstmt.setString(1, req.getZip());
@@ -766,30 +720,53 @@ public class Rest extends RestBasis {
 		pstmt.setString(4, req.getLongitude());
 		pstmt.setString(5, req.getLatitude());
 		pstmt.setInt(6, locationId);
-		pstmt.setString(7, req.getIcon_url());
-
+		
 		pstmt.executeUpdate();
 		pstmt.close();
-
+		
+		//update store
 		sql = "UPDATE store SET name = ? WHERE store_id = ?";
 		pstmt = con.prepareStatement(sql);
 		pstmt.setString(1, req.getMarket_name());
 		pstmt.setInt(2, req.getMarket_id());
-
 		pstmt.executeUpdate();
-		rs.close();
 		pstmt.close();
-
-		con.commit();
+		
+		//delete periods
+		sql = "DELETE FROM periods WHERE store_id = ?";
+		pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, req.getMarket_id());
+		pstmt.executeUpdate();
+		
+		//insert periods
+		List<PeriodItem> periods = req.getPeriods();
+		if (!periods.isEmpty()) {
+			sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
+			int store_id = req.getMarket_id();
+			for (PeriodItem period : periods) {
+				sql += " ( " + store_id + ", " + period.getClose_day_id() + ", " + period.getClose_time() + ", " + period.getOpen_day_id() + ", " + period.getOpen_time() + " ),"   ;
+			}
+			if ((sql != null) && (sql.length() > 0)) {
+				sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
+			}
+			pstmt = con.prepareStatement(sql);
+			pstmt.executeUpdate();	
+			con.commit();
+		}
+		
+		
+		
 		res.setResult("success");
 
 		return res;
 	}
-
+	
+	// TODO test add periods
 	private GenericResponse marketManageAdd(Connection con, MarketManageRequest req) throws Exception {
 		GenericResponse res = new GenericResponse();
 		int locationId;
 
+		//insert location
 		String sql = "INSERT INTO location (zip, city, street, longitude, latitude) VALUES (?, ?, ?, ?, ?)";
 		
 		PreparedStatement pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
@@ -805,21 +782,35 @@ public class Rest extends RestBasis {
 		rs.close();
 		pstmt.close();
 
+		//insert store Information
 		sql = "INSERT INTO store (name, location_id, google_id, icon_url) VALUES (?, ?, ?, ?)";
 		pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 		pstmt.setString(1, req.getMarket_name());
 		pstmt.setInt(2, locationId);
 		pstmt.setString(3, req.getMaps_id());
 		pstmt.setString(4, req.getIcon_url());
-
 		pstmt.executeUpdate();
 		rs = pstmt.getGeneratedKeys();
 		rs.next();
 		req.setMarket_id( rs.getInt(1));
 		rs.close();
 		pstmt.close();
-
-		con.commit();
+		
+		//insert periods
+		List<PeriodItem> periods = req.getPeriods();
+		if (!periods.isEmpty()) {
+			sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
+			int store_id = req.getMarket_id();
+			for (PeriodItem period : periods) {
+				sql += " ( " + store_id + ", " + period.getClose_day_id() + ", " + period.getClose_time() + ", " + period.getOpen_day_id() + ", " + period.getOpen_time() + " ),"   ;
+			}
+			if ((sql != null) && (sql.length() > 0)) {
+				sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
+			}
+			pstmt = con.prepareStatement(sql);
+			pstmt.executeUpdate();	
+			con.commit();
+		}
 		res.setResult("success");
 
 		return res;
@@ -1423,6 +1414,114 @@ public class Rest extends RestBasis {
 		return ret; 
 	}
 	
+	private List<MarketStockItem> getProducts(Connection con, int store_id) throws SQLException {
+		String sql = "select s.product_id,p.name,s.quantity,p.emoji from stock s, product p where " +
+				  "s.store_id=? and s.product_id=p.product_id order by p.name";
+		PreparedStatement pstmt = null;
+		pstmt = con.prepareStatement( sql );
+		pstmt.setInt(1, store_id);
+		ResultSet rs = pstmt.executeQuery();
+		List<MarketStockItem> products = new ArrayList<MarketStockItem>();
+		
+		while( rs.next() ) {
+			products.add( new MarketStockItem( rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4) ));
+		}
+		rs.close();
+		pstmt.close();
+		
+		return products;
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @param con
+	 * @param store_id 
+	 * @return market with corresponding location, periods and stock from DB
+	 * @throws SQLException
+	 */
+	private SupermarketItem getMarketFromDB(Connection con, int store_id) throws SQLException {
+		String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude, s.name, s.google_id, s.icon_url, s.last_updated from store s, location l "
+				+ "where s.store_id = ? and l.location_id=s.location_id";
+		PreparedStatement pstmt = null;
+		pstmt = con.prepareStatement( sql );
+		pstmt.setInt(1, store_id);
+		ResultSet rs = pstmt.executeQuery();
+		
+		Location location = new Location();
+		SupermarketItem marketDB = new SupermarketItem();
+		marketDB.setMarket_id(store_id);
+		if ( rs.next() ) {
+			location.setZip(rs.getString(1));
+			location.setCity(rs.getString(2));
+			location.setStreet(rs.getString(3));
+			location.setLongitude(rs.getString(4));
+			location.setLatitude(rs.getString(5));
+			marketDB.setLocation(location);
+			
+			marketDB.setMarket_name(rs.getString(6));
+			marketDB.setMaps_id(rs.getString(7));
+			marketDB.setIcon_url(rs.getString(8));
+			marketDB.setLastUpdated(rs.getString(9));	
+			
+			marketDB.setPeriods(getPeriods(con, store_id));
+			marketDB.setProducts(getProducts(con, store_id));
+		}
+		rs.close();
+		pstmt.close();
+				
+		return marketDB;
+	}
+	
+	private boolean anyMarketInformationMissing(SupermarketItem market) {
+		boolean result = false;
+		
+		if (market.getCity() == null) {result = true;}
+		if (market.getIcon_url() == null) {result = true;}
+		if (market.getMarket_name() == null) {result = true;}
+		if (market.getPeriods() == null) {result = true;}
+		if (market.getStreet() == null) {result = true;}
+		if (market.getZip() == null) {result = true;}
+		
+		//Wenn letztes Update zu lange her (in Bezug auf Öffnungszeiten z.B.)
+		//if (market.getLast_updated() > ???? ) {result = true;}
+		
+		return result;
+	}
+	
+	private boolean marketIsInDb(Connection con, SupermarketItem market) {
+		try {
+			String sql = "";
+			PreparedStatement pstmt = null;
+				sql = "select store.store_id from store "
+					+ "where store.google_id = ?";
+				pstmt = con.prepareStatement( sql );
+				pstmt.setString(1, market.getMaps_id());
+				
+				ResultSet rs = pstmt.executeQuery();
+				int count = 0;
+				int storeId = 0;
+				while(rs.next()) {
+					storeId = rs.getInt("store_id");
+					count++;
+				}
+				market.setMarket_id(storeId);
+				
+				rs.close();
+				pstmt.close();
+				
+				return count >= 1;
+		}
+		catch ( Exception ex) {
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
 	
 	@POST
 	@Path("/day/scrape")
