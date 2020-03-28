@@ -291,6 +291,8 @@ public class Rest extends RestBasis {
 								
 								market.setMarket_id( mmr.getMarket_id() );
 							}
+							market.setPeriods( marketDB.getPeriods());
+							market.setProducts( marketDB.getProducts());
 							
 						} else {
 							// add market to db
@@ -306,9 +308,9 @@ public class Rest extends RestBasis {
 							marketManageAdd( con, mmr );
 							
 							market.setMarket_id( mmr.getMarket_id() );							
+							market.setPeriods(getPeriods( con, market.getMarket_id() ) );
 						}
 						
-						market.setPeriods(getPeriods( con, market.getMarket_id() ) );
 						marketList.add(market);						
 					}
 				}				
@@ -1365,13 +1367,13 @@ public class Rest extends RestBasis {
 		return (int) dist;
 	}
 	
-	private List<PeriodItem> getPeriods( Connection con, int store_id ) {
+	private List<PeriodItem> getPeriods( Connection con, int store_id  ) {
 		List<PeriodItem> list = new ArrayList<PeriodItem>();
 		PreparedStatement pstmt = null;
-		String sql = "select d1.name, d1.name_short close_day_id, close_time, d2.name, d2.name_short, open_day_id, open_time from periods p" +
+		String sql = "select d1.name, d1.name_short, close_day_id, close_time, d2.name, d2.name_short, open_day_id, open_time from periods p " +
 					 "left outer join day d1 on p.close_day_id=d1.day_id " +
 					 "left outer join day d2 on p.open_day_id=d2.day_id " +
-					 "where store_id=? order by p.periode_id";
+					 "where store_id=? order by p.period_id";
 		try {
 			pstmt = con.prepareStatement( sql );
 			pstmt.setInt(1, store_id);
@@ -1381,11 +1383,11 @@ public class Rest extends RestBasis {
 				item.setClose_name(rs.getString(1));
 				item.setClose_name_short(rs.getString(2));
 				item.setClose_day_id(rs.getInt(3));
-				item.setClose_time(formatTime(rs.getString(4)));
+				item.setClose_time(formatTime(rs.getInt(4)));
 				item.setOpen_name(rs.getString(1));
 				item.setOpen_name_short(rs.getString(2));
 				item.setOpen_day_id(rs.getInt(3));
-				item.setOpen_time(formatTime(rs.getString(4)));
+				item.setOpen_time(formatTime(rs.getInt(4)));
 				list.add(item);
 			}
 			rs.close();
@@ -1398,7 +1400,7 @@ public class Rest extends RestBasis {
 			}
 		}
 		
-		return null;
+		return list;
 	}
 	
 	/**
@@ -1406,10 +1408,10 @@ public class Rest extends RestBasis {
 	 * @param t
 	 * @return
 	 */
-	private String formatTime( String t ) {
-		String ret = t;
-		if ( t.length() == 4 ) {
-			ret = t.substring(0,2) + ":" + t.substring(3);
+	private String formatTime( int t ) {
+		String ret = String.format("%04d", t);
+		if ( ret.length() == 4 ) {
+			ret = ret.substring(0,2) + ":" + ret.substring(2);
 		}
 		return ret; 
 	}
@@ -1465,7 +1467,7 @@ public class Rest extends RestBasis {
 			marketDB.setIcon_url(rs.getString(8));
 			marketDB.setLastUpdated(rs.getString(9));	
 			
-			marketDB.setPeriods(getPeriods(con, store_id));
+			marketDB.setPeriods(getPeriods(con, store_id ));
 			marketDB.setProducts(getProducts(con, store_id));
 		}
 		rs.close();
