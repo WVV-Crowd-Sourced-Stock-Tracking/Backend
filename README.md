@@ -1,4 +1,4 @@
-# Backend
+# Backend - Neue Version mit neuem Backend
 ### Bei Fragen/Unklarheiten einfach melden. Kleine Fehler können sich eingeschlichen haben, wir bitten euch darum uns diese mitzuteilen. :)
 
 
@@ -38,7 +38,7 @@
 
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/stock)
 
-**Anfrage:** `market_id` (prio 1, optional wenn google_id), `google_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
+**Anfrage:** `market_id` (prio 1, optional wenn google_id), `maps_id` (prio 2, optional wenn market_id ), JSON Liste von `product_id` (optional)
 
 - Falls keine `product_id`-Liste übermittelt wird besteht die Rückgabe aus dem gesamten im Store bekannten Sortimentsbestand.
 
@@ -56,7 +56,7 @@ Json Input 1
 Json Input 2
 ```yaml
 {
-"google_id": “GOOGLE_DATA”,
+"maps_id": lkfdsJKJD83KJDkdk,
 "product_id":  [1, 2]
 }
 
@@ -69,7 +69,8 @@ Json Output
    "product": [ {
       "product_id": 1,
       "product_name": "test",
-      "quantity": 50
+      "quantity": 50,
+      "emoji": xyz
    }
    ]
 }
@@ -99,7 +100,7 @@ Json Input 2
    “bulk”: [{
       "market_id": 1,
       "product_id": 1,
-      "quantity": 100
+      "availability": 100
       }, 
       {...Another Product...}
       ]
@@ -119,17 +120,20 @@ Json Output
 
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/scrape](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/scrape)
 
-**Anfrage:** JSON mit attr `zip` und/oder `gps_length, gps_width`, `radius` (in Meter, optional), JSON Liste von `product_id` (optional), `details_requested` (*deprecated* durch `/market/details`)
+**Anfrage:** JSON mit attr `zip` und/oder `longitude, latitude`, `radius` (in Meter, optional), JSON Liste von `product_id` (optional), `details_requested` (*deprecated* durch `/market/details`)
 
 - Falls JSON Liste `product_id` fehlt, wird jeweils der gesamte bekannte Supermarktbestand zurückgeliefert. Ansonsten der gefilterte Bestand.
 - Anfrage mit `zip` liefert alle Märkte mit entsprechender PLZ.
-- Anfrage mit `gps_length` (longitude) und `gps_width` (latitude) liefert Märkte um die gegebenen Koordinaten mit Radius `radius`.
+- Anfrage mit `longitude` und `latitude` liefert Märkte um die gegebenen Koordinaten mit Radius `radius`.
 - Sind `GPS`-Koordinaten übergeben, wird `zip` ignoriert.
 - Default `radius` ist 1000m 
+- `details_requested`
+	- `false`: Es werden keine Bestandsinformationen zurückgeliefert -> für bessere Performance
+	- `true` (default): Es werden zusätzlich zu den Marktinformationen auch der vorhandene Bestand übergeben
 
 **Antwort:** JSON Liste, in der jedes Element einen Supermarkt mit seinem angefragten Sortiment darstellt.
 
-JSON Liste `supermarkt` mit Elementen bestehend aus `market_id`, `name`, `city`, `zip`, `street`, `gps_length`, `gps_width`, `distance`, `google_id`, `open_now` JSON Liste von JSON Liste von `product` mit Elementen bestehend aus `product_id`, `product_name`, `quantity` (optional wenn auch in der Anfrage)
+JSON Liste `supermarkt` mit Elementen bestehend aus `market_id`,`maps_id`, `market_name`, `city`, `zip`, `street`, `longitude`, `latitude`, `distance`,  `icon_url`, `distance`(in Meter), `periods`, JSON Liste von JSON Liste von `product` mit Elementen bestehend aus `product_id`, `product_name`, `quantity` (optional je nach `details_requested`)
 
 **Beispiel:**
 Json Input
@@ -149,27 +153,44 @@ Json Input
 Json Output
  ```yaml
 [ {
-	"id": Number (Beispiel: 2),
-	"mapsId": String (Beispiel: "rx59ghdk"),
-	"name": String (Beispiel: "Rewe"),
+	"market_id": Number (Beispiel: 2),
+	"maps_id": String (Beispiel: "rx59ghdk"),
+	"market_name": String (Beispiel: "Rewe"),
 	"city": String (Beispiel: "Berlin"),
 	"zip": Number (Beispiel: 12345),
 	"street": String (Beispiel: "Frommhagenstraße 10"),
 	"lat": String (Beispiel: "52.5221422"),
 	"lng": String (Beispiel: "13.4034652"),
 	"distance": Number (Beispiel: 500),
-	"open": Boolean (Beispiel: true),
+	“icon_url”: String (Beispiel: http://www.sampleurl.de),
+	“periods”:[
+            {
+		“open_day_id”: 1,
+                “open_time”: “07:00”,
+                “open_day”: “Montag”,
+                “open_day_short”: “Mo”,
+		“close_day_id”: 1,
+                “close_time”: "22:00",
+                “close_day”: “Montag”,
+                “close_day_short”: “Mo”
+		},
+		{...weitere Öffnungsperiode...}
+		],
 	"products": [
 		{
 		"id": Number (Beispiel: 1),
 		"name": String (Beispiel: "Milch"),
-		"availability": Number (Beispiel: 43)
+		"availability": Number (Beispiel: 43),
+		"emoji": xyz
 	     },
 	     {
 		"id": Number (Beispiel: 2),
 		"name": String (Beispiel: "Eis"),
-		"availability": Number (Beispiel: 74)
-	     }
+		"availability": Number (Beispiel: 74),
+		"emoji": xyz
+	     }]
+	
+
 	},
 	{...weiterer Supermarkt und Bestandsinformationen...}
 ]
@@ -179,16 +200,16 @@ Json Output
 `POST /market/details`
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/details](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/details)
 
-**Anfrage:** JSON mit  `id` (WhatsLeft-MarketID) oder `mapsId` (Google Maps POI-ID)
+**Anfrage:** JSON mit  `market_id` oder `maps_id` (Google Maps POI-ID)
 
 **Antwort:** JSON mit `result`, Liste `supermarket`mit Marktinformationen, sowie dem erfassten Bestand
 
 **Beispiel:**
 Json Input
 ```yaml
-{"id": 47}
+{"market_id": 47}
 Oder
-{"mapsId": "ChIJiT47naRPqEcRkuiNMlhUlAY"}
+{"maps_id": "ChIJiT47naRPqEcRkuiNMlhUlAY"}
 
 {
 ```
@@ -197,25 +218,39 @@ Json Output
 {
 "result": "success",
 "supermarket": {
-	"id": 47,
-	"name": "REWE",
+	"market_id": 47,
+	"market_name": "REWE",
 	"city": "Berlin",
 	"street": "Karl-Marx-Straße 92-98",
-	"lng": "13.4358774",
-	"lat": "52.4798766",
-	"distance": "",
-	"mapsId": "ChIJiT47naRPqEcRkuiNMlhUlAY",
-	"open": false,
+	"longitude": "13.4358774",
+	"latitude": "52.4798766",
+	"maps_id": "ChIJi47naRPqcRkuiNMlhUlAY",
+	“icon_url”: String (Beispiel: http://www.sampleurl.de),
+	“periods”:[
+            {
+		“open_day_id”: 1,
+                “open_time”: “07:00”,
+                “open_day”: “Montag”,
+                “open_day_short”: “Mo”,
+		“close_day_id”: 1,
+                “close_time”: "22:00",
+                “close_day”: “Montag”,
+                “close_day_short”: “Mo”
+		},
+		{...weitere Öffnungsperiode...}
+		],
 	"products": [
 		{
-			"id": 26,
-			"name": "Fisch",
-			"availability": 100
+			"product_id": 26,
+			"product_name": "Fisch",
+			"availability": 100,
+			"emoji": xyz
 	      },
 	      {
-			"id": 162,
-			"name": "Nudeln",
-			"availability": 65
+			"product_id": 162,
+			"product_name": "Nudeln",
+			"availability": 65,
+			"emoji": xyz
 	      }
 	      ]
 	}
@@ -227,7 +262,7 @@ Json Output
 
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/market/manage)
 
-**Anfrage:** JSON operation(“create”, “modify”, “delete”), market_id, name, city, zip, street, gps_length, gps_width
+**Anfrage:** JSON operation(“create”, “modify”, “delete”), `market_id`, `market_name`, `city`, `zip`, `street`, `longitude`, `latitude`
 
 **Antwort:** `result` (“success” or “error”)
 
@@ -237,12 +272,12 @@ Json Input Anlegen
 ```yaml
 { 
    "operation":"create", 
-   "name":"REWE", 
+   "market_name":"REWE", 
    "city":"Bad Nauheim",
    "zip":"61231",
    "street":"Georg-Scheller-Strasse 2-8",
-   "gps_length":"8.754167",
-   "gps_width":"50.361944"
+   "longitude":"8.754167",
+   "latitude":"50.361944"
 }
 ```
 Json Input Ändern
@@ -250,12 +285,12 @@ Json Input Ändern
 { 
    "operation":"modify", 
    "market_id":7, 
-   "name":"ROWO",
+   "market_name":"ROWO",
    "city":"Bad Nauheim",
    "zip":"61231", 
    "street":"Georg-Scheller-Strasse 2-10",
-   "gps_length":"8.754167", 
-   "gps_width":"50.361944" 
+   "longitude":"8.754167", 
+   "latitude":"50.361944" 
 }
 ```
 Json Input Löschen
@@ -285,7 +320,7 @@ Liefert eine Liste aller verfügbaren Produktkategorien zurück.
 
 **Anfrage:** 
 
-**Antwort:** JSON Liste mit Elementen bestehend aus `product_id`, `name`
+**Antwort:** JSON Liste mit Elementen bestehend aus `product_id`, `prodect_name`, `emoji`
 
  
 **Beispiel:**
@@ -299,8 +334,8 @@ Json Output
 {
 	"result": "success",
 	"product": [ 
-	   {"product_id": 1, "product_name": "Milch"},
-	   {"product_id": 3, "product_name": "Kartoffeln"}
+	   {"product_id": 1, "product_name": "Milch", "emoji": 🥛},
+	   {"product_id": 3, "product_name": "Kartoffeln", "emoji": 🥔}
 	   ]
 }
 ```
@@ -310,12 +345,12 @@ Json Output
 
 [https://wvvcrowdmarket.herokuapp.com/ws/rest/product/manage](https://wvvcrowdmarket.herokuapp.com/ws/rest/product/mamage)
 
-**Anfrage:** `operation`, `product_id`, `name`
+**Anfrage:** `operation`, `product_id`, `product_name`
 
 - `operation` : "create", "modify" or "delete"
-	- create:  `name` ist name des neuen Produktes, `product_id` wird ignoriert
-	- modify: `product_id` zu modifizierendes Produkt, `name` Neuer name des Produktes
-	- delete: `product_id` zu löschendes Produkt, `name` wird ignoriert
+	- create:  `product_name` ist name des neuen Produktes, `product_id` wird ignoriert
+	- modify: `product_id` zu modifizierendes Produkt, `product_name` Neuer name des Produktes
+	- delete: `product_id` zu löschendes Produkt, `product_name` wird ignoriert
 
 **Antwort:** `result` 
 
@@ -328,7 +363,7 @@ Json Input
 {
    "operation":"create",
    "product_id": 1,
-   "name":"Milch"
+   "product_name":"Milch"
 }
 ```
 
@@ -353,7 +388,7 @@ Json Output
 
 - `ean`: 8- oder 13-stellige [EAN](https://de.wikipedia.org/wiki/European_Article_Number)
 
-**Antwort:** JSON `result`, `product_id`, `name`
+**Antwort:** JSON `result`, `product_id`, `product_name`
 
 - `result`:  “success” or “error”
  
@@ -370,7 +405,7 @@ Json Output
 {
    "result": "success",
    "product_id": 1,
-   "name": "Milch"
+   "product_name": "Milch"
 }
 ```
 

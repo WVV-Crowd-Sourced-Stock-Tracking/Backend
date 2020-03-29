@@ -17,10 +17,14 @@ public class SupermarketItem {
 	private String latitude;
 	private String distance = "";			//UoM is meter
 	private String maps_id = "";
-	private String icon_url = "";
+	private String icon_url = " ";
 	private List<PeriodItem> periods = new ArrayList<PeriodItem>();
 	private List<MarketStockItem> products = new ArrayList<MarketStockItem>();
-
+	private String last_updated = "";
+	
+	
+	
+	
 	public int getMarket_id() {
 		return market_id;
 	}
@@ -123,5 +127,14 @@ public class SupermarketItem {
 		zip = location.getZip();
 		street = location.getStreet();
 	}
+	
+	public String getLast_updated() {
+		return last_updated;
+	}
+	
+	public void setLastUpdated(String last_updated) {
+		this.last_updated = last_updated;
+	}
+	
 
 }
