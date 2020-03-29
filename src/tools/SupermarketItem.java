@@ -3,6 +3,9 @@ package tools;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 public class SupermarketItem {
 	
 	public SupermarketItem() {
@@ -23,7 +26,8 @@ public class SupermarketItem {
 	private String last_updated = "";
 	
 	
-	
+	@JsonIgnore
+	private int product_rating = 0;
 	
 	public int getMarket_id() {
 		return market_id;
@@ -86,6 +90,13 @@ public class SupermarketItem {
 	}
 	public void setIcon_url(String icon_url) {
 		this.icon_url = icon_url;
+	}
+	
+	public int getProduct_rating() {
+		return product_rating;
+	}
+	public void setProduct_rating(int product_rating) {
+		this.product_rating = product_rating;
 	}
 	/**
 	 * 

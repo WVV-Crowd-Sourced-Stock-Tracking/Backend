@@ -9,6 +9,8 @@ import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -229,12 +231,9 @@ public class Rest extends RestBasis {
 			List<SupermarketItem> marketList = new ArrayList<SupermarketItem>();
 			
 			if (zipString.length() > 0 && (longitude.length() == 0 || latitude.length() == 0)) {
-				//TODO SQL Alle mit gleicher Zip
-				int zip = Integer.parseInt(zipString);
-				
 				PreparedStatement pstmt = null;
 				pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where location.zip=?");
-				pstmt.setInt(1, zip);
+				pstmt.setString(1, zipString);
 				rsMarkets = pstmt.executeQuery();
 				
 				
@@ -354,6 +353,7 @@ public class Rest extends RestBasis {
 				//Fuelle singleMarketProducts-Liste mit den angefragten Produkten
 				
 				while (marketIterator.hasNext()) {
+					int rating = 0;
 					currMarket = marketIterator.next();
 					singleMarketProducts = new ArrayList<MarketStockItem>();
 					//Create ProductID-String for sql query
@@ -366,12 +366,37 @@ public class Rest extends RestBasis {
 					while( rsProducts.next() ) {
 						MarketStockItem jsonProductItem = new MarketStockItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3),rsProducts.getString(4));
 						singleMarketProducts.add(jsonProductItem);
+						if ( jsonProductItem.getAvailability() > 33 ) rating++;
 					}
 					rsProducts.close();
 					pstmt.close();
 					currMarket.setProducts(singleMarketProducts);
+					currMarket.setProduct_rating( rating );
 					productsInMarkets.add(singleMarketProducts);		
 				} 
+				
+				// Order by product_rating desc, distance asc
+				Collections.sort( marketList, new Comparator<SupermarketItem>() {
+
+					@Override
+					public int compare(SupermarketItem o1, SupermarketItem o2) {
+						int ret = 0;
+						Double d1 = 0.0;
+						Double d2 = 0.0;
+						try {
+							d1 = Double.valueOf( o1.getDistance() );
+							d2 = Double.valueOf( o2.getDistance() );
+						}
+						catch(Exception ex) {
+						}
+						if ( o1.getProduct_rating() > o2.getProduct_rating() ) ret = -1;	
+						else if ( o1.getProduct_rating() < o2.getProduct_rating() ) ret = 1;
+						else if ( d1 < d2 ) ret = -1;
+						else if ( d1 > d2 ) ret = 1;
+						
+						return ret;
+					}
+				});
 				
 				res.setProducts(productsInMarkets);
 			}	
@@ -761,8 +786,8 @@ public class Rest extends RestBasis {
 			pstmt = con.prepareStatement(sql);
 			System.out.println(sql);
 			pstmt.executeUpdate();	
-			con.commit();
 		}
+		con.commit();
 		
 		
 		
@@ -820,8 +845,8 @@ public class Rest extends RestBasis {
 			}
 			pstmt = con.prepareStatement(sql);
 			pstmt.executeUpdate();	
-			con.commit();
 			}
+			con.commit();
 		}
 		catch (SQLSyntaxErrorException e) {
 			System.out.println("MarketmanageRequestAdd - Bad store periods on maps_id:" + req.getMaps_id());
