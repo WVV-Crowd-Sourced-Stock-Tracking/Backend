@@ -1382,7 +1382,7 @@ public class Rest extends RestBasis {
 	}
 	
 	private List<PeriodItem> getPeriods( Connection con, int store_id  ) {
-		System.out.println("Rest.getPeriods() : begin");
+		//System.out.println("Rest.getPeriods() : begin");
 		List<PeriodItem> list = new ArrayList<PeriodItem>();
 		PreparedStatement pstmt = null;
 		String sql = "select d1.name, d1.name_short, close_day_id, close_time, d2.name, d2.name_short, open_day_id, open_time from periods p " +
@@ -1407,7 +1407,7 @@ public class Rest extends RestBasis {
 			}
 			rs.close();
 			pstmt.close();
-			System.out.println("Rest.getPeriods() : success");
+			//System.out.println("Rest.getPeriods() : success");
 		}
 		catch( Exception ex) {
 			System.out.println("Rest.getPeriods() : exception catch");
@@ -1495,7 +1495,7 @@ public class Rest extends RestBasis {
 	
 	private boolean anyMarketInformationMissing(SupermarketItem market) {
 		boolean result = false;
-		System.out.print("Testing for missing information: ID:" + market.getMarket_id() + ". ");
+		//System.out.print("Rest.AnyMarketInformationMissing(): ID:" + market.getMarket_id() + ". ");
 		if (market.getCity() == null) {result = true; System.out.print("city ");}
 		if (market.getIcon_url() == null) {result = true; System.out.print("icon_url ");}
 		if (market.getMarket_name() == null) {result = true; System.out.print("market_name ");}
@@ -1505,7 +1505,7 @@ public class Rest extends RestBasis {
 		
 		//Wenn letztes Update zu lange her (in Bezug auf Öffnungszeiten z.B.)
 		//if (market.getLast_updated() > ???? ) {result = true;}
-		System.out.println(" - " + result);
+		//System.out.println(" - " + result);
 		return result;
 	}
 	
