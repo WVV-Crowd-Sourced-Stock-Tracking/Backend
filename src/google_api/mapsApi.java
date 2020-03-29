@@ -32,7 +32,7 @@ public class mapsApi {
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("User-Agent", USER_AGENT);
 		int responseCode = conn.getResponseCode();
-		System.out.println("Maps API Scrape Area - GET Response Code :: " + responseCode);
+		//System.out.println("Maps API Scrape Area - GET Response Code :: " + responseCode);
 		
 		JsonNode actualObj = null;
 		if (responseCode == HttpURLConnection.HTTP_OK) { // success
@@ -76,7 +76,7 @@ public class mapsApi {
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("User-Agent", USER_AGENT);
 		int responseCode = conn.getResponseCode();
-		System.out.println("GET Response Code :: " + responseCode);
+		//System.out.println("GET Response Code :: " + responseCode);
 		JsonNode objNode = null;
 		if (responseCode == HttpURLConnection.HTTP_OK) { // success
 			InputStream in = conn.getInputStream();
@@ -113,7 +113,7 @@ public class mapsApi {
 			//opening hours
 						
 			String str = objNode.findPath("opening_hours").findPath("periods").toString();
-			System.out.println(str);
+			//System.out.println(str);
 			
 			JsonNode periodsNode = objNode.findPath("opening_hours").findPath("periods");
 			List<PeriodItem> periodsList = new ArrayList<PeriodItem>();

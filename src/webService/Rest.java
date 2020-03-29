@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -291,8 +292,13 @@ public class Rest extends RestBasis {
 								
 								market.setMarket_id( mmr.getMarket_id() );
 							}
-							market.setPeriods( marketDB.getPeriods());
-							market.setProducts( marketDB.getProducts());
+							market = marketDB;
+							market.setDistance(distance);
+							if (market.getMarket_id() == 1624) {
+								boolean test = true;
+							}
+							//market.setPeriods( marketDB.getPeriods());
+							//market.setProducts( marketDB.getProducts());
 							
 						} else {
 							// add market to db
@@ -727,10 +733,11 @@ public class Rest extends RestBasis {
 		pstmt.close();
 		
 		//update store
-		sql = "UPDATE store SET name = ? WHERE store_id = ?";
+		sql = "UPDATE store SET name = ?, icon_url = ? WHERE store_id = ?";
 		pstmt = con.prepareStatement(sql);
 		pstmt.setString(1, req.getMarket_name());
-		pstmt.setInt(2, req.getMarket_id());
+		pstmt.setString(2, req.getIcon_url());
+		pstmt.setInt(3, req.getMarket_id());
 		pstmt.executeUpdate();
 		pstmt.close();
 		
@@ -752,6 +759,7 @@ public class Rest extends RestBasis {
 				sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
 			}
 			pstmt = con.prepareStatement(sql);
+			System.out.println(sql);
 			pstmt.executeUpdate();	
 			con.commit();
 		}
@@ -800,7 +808,8 @@ public class Rest extends RestBasis {
 		
 		//insert periods
 		List<PeriodItem> periods = req.getPeriods();
-		if (!periods.isEmpty()) {
+		try {
+			if (!periods.isEmpty()) {
 			sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
 			int store_id = req.getMarket_id();
 			for (PeriodItem period : periods) {
@@ -812,7 +821,12 @@ public class Rest extends RestBasis {
 			pstmt = con.prepareStatement(sql);
 			pstmt.executeUpdate();	
 			con.commit();
+			}
 		}
+		catch (SQLSyntaxErrorException e) {
+			System.out.println("MarketmanageRequestAdd - Bad store periods on maps_id:" + req.getMaps_id());
+		}
+		
 		res.setResult("success");
 
 		return res;
@@ -1294,8 +1308,8 @@ public class Rest extends RestBasis {
 
 			ResultSet rs = pstmt.executeQuery();
 			while ( rs.next() ) {
-				System.out.println(rs.getString(4));
-				System.out.println(rs.getString(5));
+				//System.out.println(rs.getString(4));
+				//System.out.println(rs.getString(5));
 
 				SupermarketItem item = new SupermarketItem();
 				item.setZip(rs.getString(1));
@@ -1368,6 +1382,7 @@ public class Rest extends RestBasis {
 	}
 	
 	private List<PeriodItem> getPeriods( Connection con, int store_id  ) {
+		System.out.println("Rest.getPeriods() : begin");
 		List<PeriodItem> list = new ArrayList<PeriodItem>();
 		PreparedStatement pstmt = null;
 		String sql = "select d1.name, d1.name_short, close_day_id, close_time, d2.name, d2.name_short, open_day_id, open_time from periods p " +
@@ -1392,8 +1407,10 @@ public class Rest extends RestBasis {
 			}
 			rs.close();
 			pstmt.close();
+			System.out.println("Rest.getPeriods() : success");
 		}
 		catch( Exception ex) {
+			System.out.println("Rest.getPeriods() : exception catch");
 			try {
 				con.rollback();
 			} catch (SQLException e) {
@@ -1478,17 +1495,17 @@ public class Rest extends RestBasis {
 	
 	private boolean anyMarketInformationMissing(SupermarketItem market) {
 		boolean result = false;
-		
-		if (market.getCity() == null) {result = true;}
-		if (market.getIcon_url() == null) {result = true;}
-		if (market.getMarket_name() == null) {result = true;}
-		if (market.getPeriods() == null) {result = true;}
-		if (market.getStreet() == null) {result = true;}
-		if (market.getZip() == null) {result = true;}
+		System.out.print("Testing for missing information: ID:" + market.getMarket_id() + ". ");
+		if (market.getCity() == null) {result = true; System.out.print("city ");}
+		if (market.getIcon_url() == null) {result = true; System.out.print("icon_url ");}
+		if (market.getMarket_name() == null) {result = true; System.out.print("market_name ");}
+		if (market.getPeriods() == null) {result = true; System.out.print("periods ");}
+		if (market.getStreet() == null) {result = true; System.out.print("street ");}
+		if (market.getZip() == null) {result = true; System.out.print("zip ");}
 		
 		//Wenn letztes Update zu lange her (in Bezug auf Öffnungszeiten z.B.)
 		//if (market.getLast_updated() > ???? ) {result = true;}
-		
+		System.out.println(" - " + result);
 		return result;
 	}
 	
