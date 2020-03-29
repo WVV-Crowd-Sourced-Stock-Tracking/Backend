@@ -1402,7 +1402,7 @@ public class Rest extends RestBasis {
 				item.setOpen_name(rs.getString(1));
 				item.setOpen_name_short(rs.getString(2));
 				item.setOpen_day_id(rs.getInt(3));
-				item.setOpen_time(formatTime(rs.getInt(4)));
+				item.setOpen_time(formatTime(rs.getInt(8)));
 				list.add(item);
 			}
 			rs.close();
