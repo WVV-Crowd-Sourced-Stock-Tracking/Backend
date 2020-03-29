@@ -28,8 +28,8 @@ public class RestBasis extends HttpServlet{
 		Connection con = null;
 		boolean ret = true;
 		if (dataSource == null) {
-			/*
-			String d = "org.mysql.jdbc.Driver";
+			
+			String d = "com.mysql.cj.jdbc.Driver";
 			String u = "jdbc:mysql://s217.goserver.host:3306/web157_db2";
 			Properties dbcpProperties = new Properties();
 			dbcpProperties.put("driverClassName", d);
@@ -39,9 +39,11 @@ public class RestBasis extends HttpServlet{
 			dbcpProperties.put("defaultAutoCommit", "FALSE");
 			dbcpProperties.put("maxActive", "1");
 			dbcpProperties.put("ssl", "true");
+			dbcpProperties.put("validationQuery", "SELECT 1");
+			dbcpProperties.put("testOnBorrow", "true");
 
 			dataSource = (BasicDataSource) BasicDataSourceFactory.createDataSource(dbcpProperties);
-			*/
+			/*
 			if (envCtx == null) {
 				if (initCtx == null) {
 					initCtx = new InitialContext();
@@ -49,7 +51,7 @@ public class RestBasis extends HttpServlet{
 				envCtx = (Context) initCtx.lookup("java:comp/env");
 			}
 			dataSource = (DataSource) envCtx.lookup(DBRESOURCE);
-
+*/
 			if (dataSource == null) {
 				ret = false;
 			}

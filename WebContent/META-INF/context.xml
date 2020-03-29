@@ -37,7 +37,7 @@
               defaultAutoCommit="false"
            	  validationQuery="SELECT 1"
               testOnBorrow="true"/>
- -->             
+           
 	<Resource name="jdbc/wvv2" 
 				global="jdbc/wvv" 
 				factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" 
@@ -56,4 +56,6 @@
 				defaultAutoCommit="false"
            	  	validationQuery="SELECT 1"
               	testOnBorrow="true">
-	</Resource></Context>
+	</Resource>
+	-->
+</Context>
