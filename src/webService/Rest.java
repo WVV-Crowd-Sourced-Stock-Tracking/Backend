@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import tools.DayItem;
 import tools.GenericResponse;
 import tools.Location;
+import tools.MarketIcons;
 import tools.MarketStockItem;
 import tools.MarketTransmitItem;
 import tools.PeriodItem;
@@ -249,6 +250,7 @@ public class Rest extends RestBasis {
 					supermarketItem.setZip(rsMarkets.getString("zip"));
 					supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
 					supermarketItem.setPeriods( getPeriods( con, supermarketItem.getMarket_id() ) );
+					MarketIcons.putIconURL(supermarketItem);
 					marketList.add(supermarketItem);					
 				}
 				res.setSupermarket(marketList);
@@ -283,6 +285,7 @@ public class Rest extends RestBasis {
 								market.setMarket_name(marketDB.getMarket_name());
 								market.setLongitude(objNode.findPath("longitude").asText());
 								market.setLatitude(objNode.findPath("latitude").asText());
+								MarketIcons.putIconURL(market);
 								
 								MarketManageRequest mmr = new MarketManageRequest();
 								mmr.setOperation("modify");
@@ -315,7 +318,7 @@ public class Rest extends RestBasis {
 							market.setMarket_id( mmr.getMarket_id() );							
 							market.setPeriods(getPeriods( con, market.getMarket_id() ) );
 						}
-						
+						MarketIcons.putIconURL(market);
 						marketList.add(market);						
 					}
 				}				
@@ -471,6 +474,7 @@ public class Rest extends RestBasis {
 				supermarketItem.setLongitude(rsMarkets.getString("longitude"));
 				supermarketItem.setLatitude(rsMarkets.getString("latitude"));
 				supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
+				MarketIcons.putIconURL(supermarketItem);
 				supermarketItem.setPeriods( getPeriods( con, supermarketItem.getMarket_id() ) );
 			}
 			pstmt.close();
