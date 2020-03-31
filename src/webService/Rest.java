@@ -1,6 +1,8 @@
 package webService;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -233,24 +235,23 @@ public class Rest extends RestBasis {
 			
 			if (zipString.length() > 0 && (longitude.length() == 0 || latitude.length() == 0)) {
 				PreparedStatement pstmt = null;
-				pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where location.zip=?");
+				pstmt = con.prepareStatement("select store.store_id from store, location where location.zip=? and location.location_id = store.location_id");
 				pstmt.setString(1, zipString);
 				rsMarkets = pstmt.executeQuery();
 				
 				
 				while( rsMarkets.next() ) {
-					SupermarketItem supermarketItem = new SupermarketItem();
-					supermarketItem.setMaps_id(rsMarkets.getString("google_id"));
-					supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
-					supermarketItem.setMarket_name(rsMarkets.getString("name"));
-					supermarketItem.setCity(rsMarkets.getString("city"));
-					supermarketItem.setLongitude(rsMarkets.getString("longitude"));
-					supermarketItem.setLatitude(rsMarkets.getString("latitude"));
-					supermarketItem.setStreet(rsMarkets.getString("street"));
-					supermarketItem.setZip(rsMarkets.getString("zip"));
-					supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
-					supermarketItem.setPeriods( getPeriods( con, supermarketItem.getMarket_id() ) );
-					MarketIcons.putIconURL(supermarketItem);
+					SupermarketItem supermarketItem = new SupermarketItem();				
+					int store_id = rsMarkets.getInt("store_id");
+					
+					//TODO fertig implementieren
+					SupermarketItem marketDB = getMarketFromDB(con, store_id);
+					
+					if (anyMarketInformationMissing(marketDB)) {
+						//UPDATE Market information
+						supermarketItem = updateMarketInformation(con, marketDB);								
+					} else { supermarketItem = marketDB; }
+									
 					marketList.add(supermarketItem);					
 				}
 				res.setSupermarket(marketList);
@@ -278,27 +279,10 @@ public class Rest extends RestBasis {
 							
 							if (anyMarketInformationMissing(marketDB)) {
 								//UPDATE Market information
-								//get zip and address-info from API
-								market = google_api.mapsApi.getPlaceDetails(maps_id);
-								market.setDistance(distance);
-								market.setMarket_id(marketDB.getMarket_id());
-								market.setMarket_name(marketDB.getMarket_name());
-								market.setLongitude(objNode.findPath("longitude").asText());
-								market.setLatitude(objNode.findPath("latitude").asText());
-								MarketIcons.putIconURL(market);
-								
-								MarketManageRequest mmr = new MarketManageRequest();
-								mmr.setOperation("modify");
-								mmr.setEverythingButOperation(market);
-								marketManageEdit(con, mmr);
-								
-								market.setMarket_id( mmr.getMarket_id() );
-							}
-							market = marketDB;
+								market = updateMarketInformation(con, marketDB);								
+							} else { market = marketDB; }
 							market.setDistance(distance);
-							if (market.getMarket_id() == 1624) {
-								boolean test = true;
-							}
+							
 							//market.setPeriods( marketDB.getPeriods());
 							//market.setProducts( marketDB.getProducts());
 							
@@ -459,23 +443,18 @@ public class Rest extends RestBasis {
 			ResultSet rsMarkets = null;
 			ResultSet rsProducts = null;
 			
-			PreparedStatement pstmt = con.prepareStatement("select * from (store inner join location on store.location_id = location.location_id ) where (store.store_id=? or google_id = ?)");
+			PreparedStatement pstmt = con.prepareStatement("select store_id, google_id from store where (store.store_id=? or google_id = ?)");
 			pstmt.setInt(1, id);
 			pstmt.setString(2, googleId);
 			rsMarkets = pstmt.executeQuery();
 			
 			while(rsMarkets.next() ) {
-				supermarketItem.setMarket_name(rsMarkets.getString("name"));
-				supermarketItem.setMaps_id(rsMarkets.getString("google_id"));
-				supermarketItem.setMarket_id(rsMarkets.getInt("store_id"));
-				supermarketItem.setCity(rsMarkets.getString("city"));
-				supermarketItem.setStreet(rsMarkets.getString("street"));
-				supermarketItem.setZip(rsMarkets.getString("zip"));
-				supermarketItem.setLongitude(rsMarkets.getString("longitude"));
-				supermarketItem.setLatitude(rsMarkets.getString("latitude"));
-				supermarketItem.setIcon_url( rsMarkets.getString("icon_url"));
-				MarketIcons.putIconURL(supermarketItem);
-				supermarketItem.setPeriods( getPeriods( con, supermarketItem.getMarket_id() ) );
+				int store_id = rsMarkets.getInt("store_id");
+				supermarketItem = getMarketFromDB(con, store_id);
+				
+				if (anyMarketInformationMissing(supermarketItem)) {
+					supermarketItem = updateMarketInformation(con, supermarketItem);	
+				}
 			}
 			pstmt.close();
 			rsMarkets.close();
@@ -491,6 +470,7 @@ public class Rest extends RestBasis {
 			}
 			rsProducts.close();
 			pstmt.close();
+			res.setSupermarket(supermarketItem);
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
@@ -778,21 +758,25 @@ public class Rest extends RestBasis {
 		
 		//insert periods
 		List<PeriodItem> periods = req.getPeriods();
-		if (!periods.isEmpty()) {
-			sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
-			int store_id = req.getMarket_id();
-			for (PeriodItem period : periods) {
-				sql += " ( " + store_id + ", " + period.getClose_day_id() + ", " + period.getClose_time() + ", " + period.getOpen_day_id() + ", " + period.getOpen_time() + " ),"   ;
+		try {
+			if (!periods.isEmpty()) {
+				sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
+				int store_id = req.getMarket_id();
+				for (PeriodItem period : periods) {
+					sql += " ( " + store_id + ", " + period.getClose_day_id() + ", " + period.getClose_time() + ", " + period.getOpen_day_id() + ", " + period.getOpen_time() + " ),"   ;
+				}
+				if ((sql != null) && (sql.length() > 0)) {
+					sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
+				}
+				pstmt = con.prepareStatement(sql);
+				System.out.println(sql);
+				pstmt.executeUpdate();	
 			}
-			if ((sql != null) && (sql.length() > 0)) {
-				sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
-			}
-			pstmt = con.prepareStatement(sql);
-			System.out.println(sql);
-			pstmt.executeUpdate();	
+			con.commit();
 		}
-		con.commit();
-		
+		catch (SQLSyntaxErrorException e) {
+			System.out.println("MarketmanageRequestAdd - Bad store periods on maps_id:" + req.getMaps_id());
+		}
 		
 		
 		res.setResult("success");
@@ -1522,19 +1506,46 @@ public class Rest extends RestBasis {
 		return marketDB;
 	}
 	
+	
+	/**
+	 * Parameter must contain maps_id, store_id, longitude, latitude
+	 * @param currMarketInDB
+	 * @return
+	 * @throws Exception 
+	 */
+	private SupermarketItem updateMarketInformation(Connection con, SupermarketItem currMarketInDB) throws Exception {
+		SupermarketItem market = google_api.mapsApi.getPlaceDetails(currMarketInDB.getMaps_id());
+		
+		market.setMarket_id(currMarketInDB.getMarket_id());
+		market.setMarket_name(currMarketInDB.getMarket_name());
+		market.setLongitude(currMarketInDB.getLongitude());
+		market.setLatitude(currMarketInDB.getLatitude());
+		market = MarketIcons.putIconURL(market);
+		
+		MarketManageRequest mmr = new MarketManageRequest();
+		mmr.setOperation("modify");
+		mmr.setEverythingButOperation(market);
+		marketManageEdit(con, mmr);
+		
+		market.setMarket_id( mmr.getMarket_id() );
+		
+		return market;
+	}
+	
 	private boolean anyMarketInformationMissing(SupermarketItem market) {
 		boolean result = false;
 		//System.out.print("Rest.AnyMarketInformationMissing(): ID:" + market.getMarket_id() + ". ");
-		if (market.getCity() == null) {result = true; System.out.print("city ");}
-		if (market.getIcon_url() == null) {result = true; System.out.print("icon_url ");}
-		if (market.getMarket_name() == null) {result = true; System.out.print("market_name ");}
-		if (market.getPeriods() == null) {result = true; System.out.print("periods ");}
-		if (market.getStreet() == null) {result = true; System.out.print("street ");}
-		if (market.getZip() == null) {result = true; System.out.print("zip ");}
+		if (market.getCity() == null || market.getCity().isEmpty()) {result = true; System.out.print("city ");}
+		if (market.getIcon_url() == null || market.getIcon_url().isEmpty()) {result = true; System.out.print("icon_url ");}
+		if (market.getMarket_name() == null || market.getMarket_name().isEmpty()) {result = true; System.out.print("market_name ");}
+		if (market.getPeriods() == null || market.getPeriods().isEmpty()) {result = true; System.out.print("periods ");}
+		if (market.getStreet() == null || market.getStreet().isEmpty()) {result = true; System.out.print("street ");}
+		if (market.getZip() == null || market.getZip().isEmpty()) {result = true; System.out.print("zip ");}
 		
 		//Wenn letztes Update zu lange her (in Bezug auf Öffnungszeiten z.B.)
 		//if (market.getLast_updated() > ???? ) {result = true;}
 		//System.out.println(" - " + result);
+		
 		return result;
 	}
 	
