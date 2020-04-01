@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import osm_api.OsmApi;
 import tools.DayItem;
 import tools.GenericResponse;
 import tools.Location;
@@ -260,10 +261,21 @@ public class Rest extends RestBasis {
 			else if (longitude != null && latitude != null) {
 				int radius = req.getRadius();
 				// Get Supermarket IDs via API			
+				marketList = findMarkets(con, Double.parseDouble(latitude), Double.parseDouble(longitude), radius);
 				
-				JsonNode actualObj = google_api.mapsApi.scrapeAreaForMarkets(longitude, latitude, radius);
+				for(SupermarketItem market : marketList) {
+					if(market.getMaps_id() == null || market.getMaps_id().equals("")) {
+						OsmApi.addGoogleMapsId(market);				
+					}
+					if(anyMarketInformationMissing(market)) {
+						market = updateMarketInformation(con, market);
+					}
+					MarketIcons.putIconURL(market);	
+				}
+				
+				//JsonNode actualObj = google_api.mapsApi.scrapeAreaForMarkets(longitude, latitude, radius);
 				 
-				if (actualObj != null) {
+				/*if (actualObj != null) {
 					for(final JsonNode objNode : actualObj) {
 						String maps_id = objNode.path("id").asText();
 						SupermarketItem market = new SupermarketItem();
@@ -305,7 +317,7 @@ public class Rest extends RestBasis {
 						MarketIcons.putIconURL(market);
 						marketList.add(market);						
 					}
-				}				
+				}*/				
 				res.setSupermarket(marketList);
 			}
 			
