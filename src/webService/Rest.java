@@ -455,17 +455,6 @@ public class Rest extends RestBasis {
 			pstmt.close();
 			rsMarkets.close();
 			
-			//Create ProductID-String for sql query
-			pstmt = con.prepareStatement("select p.product_id, p.name, s.quantity, p.emoji from product p, stock s where p.product_id=s.product_id and s.store_id=? order by s.quantity desc");
-			pstmt.setInt(1, supermarketItem.getMarket_id());
-			rsProducts = pstmt.executeQuery();
-				
-			while( rsProducts.next() ) {
-				MarketStockItem jsonProductItem = new MarketStockItem(rsProducts.getInt(1),rsProducts.getString(2),rsProducts.getInt(3),rsProducts.getString(4));
-				supermarketItem.getProducts().add(jsonProductItem);
-			}
-			rsProducts.close();
-			pstmt.close();
 			res.setSupermarket(supermarketItem);
 			res.setResult("success");
 		}
