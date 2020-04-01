@@ -135,6 +135,13 @@ Json Output
 
 JSON Liste `supermarkt` mit Elementen bestehend aus `market_id`,`maps_id`, `market_name`, `city`, `zip`, `street`, `longitude`, `latitude`, `distance`,  `icon_url`, `distance`(in Meter), `periods`, JSON Liste von JSON Liste von `product` mit Elementen bestehend aus `product_id`, `product_name`, `quantity` (optional je nach `details_requested`)
 
+- `periods`: JSON mit den folgenden Einträgen. Sind keine Öffnungszeiten bekannt, wird eine leere Liste zurück geliefert.
+	- `open_day_id` u. `close_day_id`: (INT) ID {0-6}, mit 0 = Sonntag (Bsp: 3 = Mittwoch)
+	- `open_time` u. `close_time`: (TEXT) Zeit im Format "hh:mm"
+	- `open_day_short` u. `close_day_short`: (TEXT) Tag in Kurzform. (Mo,Di,Mi,Do,Fr,Sa,So)
+	- `open_day` u. `close_day`: (TEXT) Ausgeschriebener Tag. (Bsp: "Sonntag")
+	
+
 **Beispiel:**
 Json Input
 ```yaml
@@ -203,6 +210,12 @@ Json Output
 **Anfrage:** JSON mit  `market_id` oder `maps_id` (Google Maps POI-ID)
 
 **Antwort:** JSON mit `result`, Liste `supermarket`mit Marktinformationen, sowie dem erfassten Bestand
+
+- `periods`: JSON mit den folgenden Einträgen. Sind keine Öffnungszeiten bekannt, wird eine leere Liste zurück geliefert.
+	- `open_day_id` u. `close_day_id`: (INT) ID {0-6}, mit 0=Sonntag (Bsp: 3 = Mittwoch)
+	- `open_time` u. `close_time`: (TEXT) Zeit im Format "hh:mm"
+	- `open_day_short` u. `close_day_short`: (TEXT) Tag in Kurzform. (Mo,Di,Mi,Do,Fr,Sa,So)
+	- `open_day` u. `close_day`: (TEXT) Ausgeschriebener Tag. (Bsp: "Sonntag")
 
 **Beispiel:**
 Json Input
@@ -285,7 +298,7 @@ Json Input Ändern
 { 
    "operation":"modify", 
    "market_id":7, 
-   "market_name":"ROWO",
+   "market_name":"REWE",
    "city":"Bad Nauheim",
    "zip":"61231", 
    "street":"Georg-Scheller-Strasse 2-10",
