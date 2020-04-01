@@ -99,7 +99,7 @@ public class Rest extends RestBasis {
 			res.setResult("Exception " + ex.getMessage());
 		} finally {
 			finallyWs(con);
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -190,7 +190,6 @@ public class Rest extends RestBasis {
 	@Path("/market/transmit")
 	public Response marketTransmitHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -199,7 +198,6 @@ public class Rest extends RestBasis {
 	@Path("/market/transmit")
 	public Response marketTransmitOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -398,7 +396,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -407,7 +405,6 @@ public class Rest extends RestBasis {
 	@Path("/market/scrape")
 	public Response marketScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -416,7 +413,6 @@ public class Rest extends RestBasis {
 	@Path("/market/scrape")
 	public Response marketScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -482,7 +478,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -491,7 +487,6 @@ public class Rest extends RestBasis {
 	@Path("/market/details")
 	public Response marketDetailsHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -500,7 +495,6 @@ public class Rest extends RestBasis {
 	@Path("/market/details")
 	public Response marketDetailsOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -582,7 +576,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -591,7 +585,6 @@ public class Rest extends RestBasis {
 	@Path("/market/stock")
 	public Response marketStockHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -600,7 +593,6 @@ public class Rest extends RestBasis {
 	@Path("/market/stock")
 	public Response marketStockOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -646,7 +638,7 @@ public class Rest extends RestBasis {
 			res.setResult("Exception " + ex.getMessage());
 		} finally {
 			finallyWs(con);
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -849,7 +841,6 @@ public class Rest extends RestBasis {
 	@Path("/market/manage")
 	public Response marketManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -858,7 +849,6 @@ public class Rest extends RestBasis {
 	@Path("/market/manage")
 	public Response marketManageOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -903,7 +893,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -912,7 +902,6 @@ public class Rest extends RestBasis {
 	@Path("/product/scrape")
 	public Response productScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -921,7 +910,6 @@ public class Rest extends RestBasis {
 	@Path("/product/scrape")
 	public Response productScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -983,7 +971,7 @@ public class Rest extends RestBasis {
 			res.setResult("Exception " + ex.getMessage());
 		} finally {
 			finallyWs(con);
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -992,7 +980,6 @@ public class Rest extends RestBasis {
 	@Path("/product/manage")
 	public Response productManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -1001,7 +988,6 @@ public class Rest extends RestBasis {
 	@Path("/product/manage")
 	public Response productManageOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -1075,7 +1061,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -1084,7 +1070,6 @@ public class Rest extends RestBasis {
 	@Path("/product_ean/manage")
 	public Response productEanManageHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -1093,7 +1078,6 @@ public class Rest extends RestBasis {
 	@Path("/product_ean/manage")
 	public Response productEanManageOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -1141,7 +1125,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -1150,7 +1134,6 @@ public class Rest extends RestBasis {
 	@Path("product_ean/scrape")
 	public Response productEanScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  							.header("Access-Control-Allow-Origin", "*")
 	  							.build();
 	      return response;
 	}
@@ -1159,7 +1142,6 @@ public class Rest extends RestBasis {
 	@Path("/product_ean/scrape")
 	public Response productEanScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -1206,7 +1188,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -1215,7 +1197,6 @@ public class Rest extends RestBasis {
 	@Path("/market/customers")
 	public Response marketCustomersHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  							.header("Access-Control-Allow-Origin", "*")
 	  							.build();
 	      return response;
 	}
@@ -1224,7 +1205,6 @@ public class Rest extends RestBasis {
 	@Path("/market/customers")
 	public Response marketCustomersOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -1261,7 +1241,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -1270,7 +1250,6 @@ public class Rest extends RestBasis {
 	@Path("/hello")
 	public Response helloHead(@QueryParam("param1") String param1) {
 		Response response = Response.ok("this body will be ignored")
-  								.header("Access-Control-Allow-Origin", "*")
   								.build();
 		return response;
 	}
@@ -1279,7 +1258,6 @@ public class Rest extends RestBasis {
 	@Path("/hello")
 	public Response helloOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
@@ -1613,7 +1591,7 @@ public class Rest extends RestBasis {
 		}
 		finally {
 			finallyWs( con );
-			response = Response.status(200).entity(res).header("Access-Control-Allow-Origin", "*").build();
+			response = Response.status(200).entity(res).build();
 		}
 		return response;
 	}
@@ -1622,7 +1600,6 @@ public class Rest extends RestBasis {
 	@Path("/day/scrape")
 	public Response dayScrapeHead(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.build();
 	      return response;
 	}
@@ -1631,7 +1608,6 @@ public class Rest extends RestBasis {
 	@Path("/day/scrape")
 	public Response dayScrapeOptions(@QueryParam("param1") String param1) {
 	      Response response = Response.ok("this body will be ignored")
-	  				.header("Access-Control-Allow-Origin", "*")
 	  				.header("Access-Control-Allow-Method", "POST")
 	  				.header("Access-Control-Allow-Headers", "Content-Type,content-type")
 	  				.header("Access-Control-Max-Age", "86400")
