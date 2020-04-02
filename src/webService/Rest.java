@@ -1382,8 +1382,11 @@ public class Rest extends RestBasis {
 	private GpsPoint bearing( GpsPoint p, long distance, int angle) {
 		GpsPoint r = new GpsPoint();
 		try {
-			double dlat = ((double)distance)/1853.0*Math.cos(angle*Math.PI/180);
-			double dlng =dlat*Math.tan(((double)angle)*Math.PI/180)/Math.cos(p.lng*Math.PI/180+dlat);
+			double distBogMin = ((double) distance / 1853);
+			double angleBog = angle*Math.PI/180.0;
+			
+			double dlat = distBogMin*Math.cos(angleBog);
+			double dlng =dlat*Math.tan(angleBog)/Math.cos(p.lat*Math.PI/180.0 + (dlat*Math.PI/(60*180)));
 			r.lat = p.lat+dlat*Math.PI/180;
 			r.lng = p.lng+dlng*Math.PI/180;
 		}
