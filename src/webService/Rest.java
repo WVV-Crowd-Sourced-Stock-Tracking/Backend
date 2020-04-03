@@ -264,12 +264,22 @@ public class Rest extends RestBasis {
 				marketList = findMarkets(con, Double.parseDouble(latitude), Double.parseDouble(longitude), radius);
 				
 				for(SupermarketItem market : marketList) {
-					if(market.getMaps_id() == null || market.getMaps_id().equals("")) {
-						OsmApi.addGoogleMapsId(market);				
+					boolean mapsIdNotSet = market.getMaps_id() == null || market.getMaps_id().equals("");
+					if(mapsIdNotSet) {
+						OsmApi.addGoogleMapsId(market);
+						
+						//update in db
+						MarketManageRequest mmr = new MarketManageRequest();
+						mmr.setOperation("modify");
+						mmr.setEverythingButOperation(market);
+						marketManageEdit(con, mmr);
 					}
-					if(anyMarketInformationMissing(market)) {
+					
+					if(anyMarketInformationMissing(market) || mapsIdNotSet) {
 						market = updateMarketInformation(con, market);
 					}
+					
+					market.setPeriods(getPeriods( con, market.getMarket_id() ) );
 					MarketIcons.putIconURL(market);	
 				}
 				
@@ -405,6 +415,7 @@ public class Rest extends RestBasis {
 			try {
 				con.rollback();
 			} catch (SQLException e) {
+				e.printStackTrace();
 			}
 			res.setResult( "Exception " + ex.getMessage() );
 		}
@@ -486,6 +497,7 @@ public class Rest extends RestBasis {
 			res.setResult("success");
 		}
 		catch ( Exception ex) {
+			ex.printStackTrace();
 			try {
 				con.rollback();
 			} catch (SQLException e) {
@@ -754,11 +766,13 @@ public class Rest extends RestBasis {
 		pstmt.close();
 		
 		//update store
-		sql = "UPDATE store SET name = ?, icon_url = ? WHERE store_id = ?";
+		sql = "UPDATE store SET name = ?, icon_url = ?,  google_id = ?, osm_id = ? WHERE store_id = ?";
 		pstmt = con.prepareStatement(sql);
 		pstmt.setString(1, req.getMarket_name());
 		pstmt.setString(2, req.getIcon_url());
-		pstmt.setInt(3, req.getMarket_id());
+		pstmt.setString(3, req.getMaps_id());
+		pstmt.setLong(4, req.getOsm_id());
+		pstmt.setInt(5, req.getMarket_id());
 		pstmt.executeUpdate();
 		pstmt.close();
 		
@@ -818,12 +832,13 @@ public class Rest extends RestBasis {
 		pstmt.close();
 
 		//insert store Information
-		sql = "INSERT INTO store (name, location_id, google_id, icon_url) VALUES (?, ?, ?, ?)";
+		sql = "INSERT INTO store (name, location_id, google_id, icon_url, osm_id) VALUES (?, ?, ?, ?, ?)";
 		pstmt = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 		pstmt.setString(1, req.getMarket_name());
 		pstmt.setInt(2, locationId);
 		pstmt.setString(3, req.getMaps_id());
 		pstmt.setString(4, req.getIcon_url());
+		pstmt.setLong(5, req.getOsm_id());
 		pstmt.executeUpdate();
 		rs = pstmt.getGeneratedKeys();
 		rs.next();
@@ -1318,7 +1333,7 @@ public class Rest extends RestBasis {
 		corners[1] = bearing( center, radius, 135);			//Lower right
 		
 		String sql = "select l.zip, l.city, l.street, l.longitude, l.latitude, " +
-					 "s.store_id,s.name,s.google_id " +
+					 "s.store_id,s.name,s.google_id, s.osm_id " +
 					 "from store s, location l " +
 					 "where l.location_id=s.location_id and " +
 					 "? <= latitude and latitude <= ? and " +
@@ -1345,6 +1360,7 @@ public class Rest extends RestBasis {
 				item.setMarket_id( rs.getInt(6));
 				item.setMarket_name(rs.getString(7));
 				item.setMaps_id(rs.getString(8));
+				item.setOsm_id(rs.getLong(9));
 				int distance = distance(lat, lng, Double.valueOf(item.getLatitude()), Double.valueOf(item.getLongitude()) );
 				item.setDistance(String.format("%d", distance));
 				list.add(item);
@@ -1535,6 +1551,7 @@ public class Rest extends RestBasis {
 		market.setMarket_name(currMarketInDB.getMarket_name());
 		market.setLongitude(currMarketInDB.getLongitude());
 		market.setLatitude(currMarketInDB.getLatitude());
+		market.setOsm_id(currMarketInDB.getOsm_id());
 		market = MarketIcons.putIconURL(market);
 		
 		MarketManageRequest mmr = new MarketManageRequest();

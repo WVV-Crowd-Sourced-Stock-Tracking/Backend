@@ -24,6 +24,7 @@ public class SupermarketItem {
 	private List<PeriodItem> periods = new ArrayList<PeriodItem>();
 	private List<MarketStockItem> products = new ArrayList<MarketStockItem>();
 	private String last_updated = "";
+	private long osm_id = 0L;
 	
 	
 	@JsonIgnore
@@ -146,6 +147,10 @@ public class SupermarketItem {
 	public void setLastUpdated(String last_updated) {
 		this.last_updated = last_updated;
 	}
-	
-
+	public long getOsm_id() {
+		return osm_id;
+	}
+	public void setOsm_id(long osm_id) {
+		this.osm_id = osm_id;
+	}
 }

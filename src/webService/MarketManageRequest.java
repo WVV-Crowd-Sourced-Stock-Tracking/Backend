@@ -18,6 +18,7 @@ public class MarketManageRequest {
 	private String maps_id = "";
 	private String icon_url = "";
 	private List<PeriodItem> periods = new ArrayList<PeriodItem>();
+	private long osm_id = 0L;
 	
 	public void setEverythingButOperation(SupermarketItem market) {
 		setMarket_id(market.getMarket_id());
@@ -30,6 +31,7 @@ public class MarketManageRequest {
 		setCity(market.getCity());
 		setPeriods(market.getPeriods());
 		setIcon_url(market.getIcon_url());
+		setOsm_id(market.getOsm_id());
 	}
 	
 	public String getOperation() {
@@ -98,4 +100,13 @@ public class MarketManageRequest {
 	public void setPeriods(List<PeriodItem> periods) {
 		this.periods = periods;
 	}
+
+	public long getOsm_id() {
+		return osm_id;
+	}
+
+	public void setOsm_id(long osm_id) {
+		this.osm_id = osm_id;
+	}
+	
 }
