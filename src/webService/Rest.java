@@ -831,16 +831,18 @@ public class Rest extends RestBasis {
 		List<PeriodItem> periods = req.getPeriods();
 		try {
 			if (!periods.isEmpty()) {
-			sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
-			int store_id = req.getMarket_id();
-			for (PeriodItem period : periods) {
-				sql += " ( " + store_id + ", " + period.getClose_day_id() + ", " + period.getClose_time() + ", " + period.getOpen_day_id() + ", " + period.getOpen_time() + " ),"   ;
-			}
-			if ((sql != null) && (sql.length() > 0)) {
-				sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
-			}
-			pstmt = con.prepareStatement(sql);
-			pstmt.executeUpdate();	
+				sql = "INSERT INTO periods (store_id, close_day_id, close_time, open_day_id, open_time) VALUES ";
+				int store_id = req.getMarket_id();
+				for (PeriodItem period : periods) {
+					sql += " ( " + store_id + ", " + period.getClose_day_id() + ", " + period.getClose_time() + ", " + period.getOpen_day_id() + ", " + period.getOpen_time() + " ),"   ;
+				}
+				if ((sql != null) && (sql.length() > 0)) {
+					sql = sql.substring(0, sql.length()-1);	//damit letztes Komma des For-Loops weg fällt
+				}
+				pstmt = con.prepareStatement(sql);
+				pstmt.executeUpdate();	
+				pstmt.close();		
+
 			}
 			con.commit();
 		}
@@ -1330,6 +1332,7 @@ public class Rest extends RestBasis {
 				item.setOsm_id(rs.getLong(9));
 				int distance = distance(lat, lng, Double.valueOf(item.getLatitude()), Double.valueOf(item.getLongitude()) );
 				item.setDistance(String.format("%d", distance));
+				item.setPeriods( getPeriods( con, rs.getInt(6)));
 				list.add(item);
 			}
 			rs.close();
